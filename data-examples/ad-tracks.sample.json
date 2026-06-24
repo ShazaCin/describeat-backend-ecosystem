@@ -1,0 +1,35 @@
+[
+  {
+    "trackId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "titleId": "2b237778-288a-4b05-b075-798804d26537",
+    "language": "en",
+    "narrator": "<redacted>",
+    "description": "Standard audio description track",
+    "trackUrl": "https://media.example.com/ad-tracks/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d.mp3",
+    "durationSeconds": 1560,
+    "fileSizeBytes": 25165824,
+    "createdAt": 1655728600000
+  },
+  {
+    "trackId": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+    "titleId": "23481f22-e492-4122-bb45-0af7ff0efae6",
+    "language": "en",
+    "narrator": "<redacted>",
+    "description": "Director's cut with extended descriptions",
+    "trackUrl": "https://media.example.com/ad-tracks/b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e.mp3",
+    "durationSeconds": 2040,
+    "fileSizeBytes": 31457280,
+    "createdAt": 1661325200000
+  },
+  {
+    "trackId": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+    "titleId": "90b0de82-e98b-462c-8007-cb6f65c4f415",
+    "language": "en",
+    "narrator": "<redacted>",
+    "description": "Standard audio description track",
+    "trackUrl": "https://media.example.com/ad-tracks/c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f.mp3",
+    "durationSeconds": 12360,
+    "fileSizeBytes": 188743680,
+    "createdAt": 1696500000000
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "feedbackId": "f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+    "userId": "sample-user-1",
+    "userEmail": "sample-1@example.com",
+    "feedbackType": "bug",
+    "subject": "Sync button does nothing on iPhone",
+    "message": "I tap the sync button and the spinner appears then disappears, but I never hear anything. I am using iPhone 15 with iOS 17.2. The PWA is added to my home screen.",
+    "attachments": [],
+    "status": "in_progress",
+    "adminNotes": "Reproduced. Looks like iOS push permission issue. Investigating.",
+    "respondedBy": "admin-user-1",
+    "respondedAt": 1700000000000,
+    "createdAt": 1699000000000
+  },
+  {
+    "feedbackId": "f2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+    "userId": "sample-user-2",
+    "userEmail": "sample-2@example.com",
+    "feedbackType": "content_request",
+    "subject": "Add audio description for [redacted show name]",
+    "message": "Would love to see this show added. It has very visual scenes that I miss without AD.",
+    "attachments": [],
+    "status": "new",
+    "adminNotes": null,
+    "respondedBy": null,
+    "respondedAt": null,
+    "createdAt": 1700100000000
+  },
+  {
+    "feedbackId": "f3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
+    "userId": "sample-user-3",
+    "userEmail": "sample-3@example.com",
+    "feedbackType": "general",
+    "subject": "Thank you for the app",
+    "message": "Just wanted to say this has changed my life. I can finally watch [redacted show] with my family. Thank you.",
+    "attachments": [],
+    "status": "resolved",
+    "adminNotes": "Sent thank-you reply.",
+    "respondedBy": "admin-user-1",
+    "respondedAt": 1700200000000,
+    "createdAt": 1700150000000
+  }
+]

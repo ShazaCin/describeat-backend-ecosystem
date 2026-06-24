@@ -1,0 +1,41 @@
+[
+  {
+    "notificationId": "n1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+    "title": "New title available",
+    "body": "We've added audio description for a new title. Check it out in the app.",
+    "recipientGroup": "all_users",
+    "deepLink": "/titles/2b237778-288a-4b05-b075-798804d26537",
+    "imageUrl": null,
+    "createdBy": "admin-user-1",
+    "createdAt": 1701000000000,
+    "scheduledFor": null,
+    "sentAt": 1701000060000,
+    "deliveryStatus": "delivered"
+  },
+  {
+    "notificationId": "n2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+    "title": "App update available",
+    "body": "A new version of the app is available. Please refresh to get the latest features.",
+    "recipientGroup": "all_users",
+    "deepLink": null,
+    "imageUrl": null,
+    "createdBy": "admin-user-1",
+    "createdAt": 1701100000000,
+    "scheduledFor": null,
+    "sentAt": 1701100060000,
+    "deliveryStatus": "delivered"
+  },
+  {
+    "notificationId": "n3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
+    "title": "Maintenance window",
+    "body": "We'll be performing maintenance on Saturday at 2am UTC. The app may be unavailable for 10 minutes.",
+    "recipientGroup": "beta_testers",
+    "deepLink": null,
+    "imageUrl": null,
+    "createdBy": "admin-user-2",
+    "createdAt": 1701200000000,
+    "scheduledFor": 1701264000000,
+    "sentAt": 1701264060000,
+    "deliveryStatus": "partial_failure"
+  }
+]

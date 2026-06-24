@@ -1,0 +1,29 @@
+[
+  {
+    "categoryId": "c1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+    "name": "Movies",
+    "description": "Feature films with audio description",
+    "imageUrl": "https://media.example.com/categories/movies.jpg",
+    "orderIndex": 1,
+    "enabled": true,
+    "createdAt": 1655000000000
+  },
+  {
+    "categoryId": "c2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+    "name": "TV Series",
+    "description": "Episodic content with audio description",
+    "imageUrl": "https://media.example.com/categories/tv-series.jpg",
+    "orderIndex": 2,
+    "enabled": true,
+    "createdAt": 1655000000000
+  },
+  {
+    "categoryId": "c3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
+    "name": "Documentaries",
+    "description": "Non-fiction content with audio description",
+    "imageUrl": "https://media.example.com/categories/documentaries.jpg",
+    "orderIndex": 3,
+    "enabled": true,
+    "createdAt": 1655000000000
+  }
+]

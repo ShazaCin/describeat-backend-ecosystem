@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" fill="#f0f6fc" font-size="22" font-weight="600">DescribeAT Backend — High-Level Architecture</text>
+  <text x="600" y="65" text-anchor="middle" fill="#8b949e" font-size="13">The four flows: listener sync, content upload, notifications, feedback</text>
+
+  <!-- Lane labels (left side) -->
+  <text x="20" y="180" fill="#8b949e" font-size="11" font-weight="600" transform="rotate(-90 20 180)">CLIENTS</text>
+  <text x="20" y="430" fill="#8b949e" font-size="11" font-weight="600" transform="rotate(-90 20 430)">EDGE / CDN</text>
+  <text x="20" y="600" fill="#8b949e" font-size="11" font-weight="600" transform="rotate(-90 20 600)">SERVICES</text>
+  <text x="20" y="730" fill="#8b949e" font-size="11" font-weight="600" transform="rotate(-90 20 730)">DATA / STORAGE</text>
+
+  <!-- Lane separator lines -->
+  <line x1="60" y1="100" x2="60" y2="780" stroke="#21262d" stroke-width="1"/>
+
+  <!-- ================== CLIENTS LANE ================== -->
+
+  <!-- Listener (PWA) -->
+  <rect x="100" y="120" width="180" height="100" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="190" y="145" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">Listener (PWA)</text>
+  <text x="190" y="168" text-anchor="middle" fill="#8b949e" font-size="11">Mobile / Tablet / Desktop</text>
+  <text x="190" y="186" text-anchor="middle" fill="#8b949e" font-size="11">Microphone + Speaker</text>
+  <text x="190" y="204" text-anchor="middle" fill="#8b949e" font-size="11">VoiceOver / TalkBack / NVDA</text>
+
+  <!-- Admin (Portal) -->
+  <rect x="320" y="120" width="180" height="100" rx="8" fill="#161b22" stroke="#d2a8ff" stroke-width="1.5"/>
+  <text x="410" y="145" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">Admin (Portal)</text>
+  <text x="410" y="168" text-anchor="middle" fill="#8b949e" font-size="11">Content managers</text>
+  <text x="410" y="186" text-anchor="middle" fill="#8b949e" font-size="11">Support staff</text>
+  <text x="410" y="204" text-anchor="middle" fill="#8b949e" font-size="11">Describer pipeline ops</text>
+
+  <!-- ================== EDGE LANE ================== -->
+
+  <!-- Edge / CDN -->
+  <rect x="100" y="370" width="400" height="100" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="300" y="395" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">Edge / CDN</text>
+  <text x="300" y="418" text-anchor="middle" fill="#8b949e" font-size="11">TLS termination · request routing</text>
+  <text x="300" y="436" text-anchor="middle" fill="#8b949e" font-size="11">Static asset cache · binary upload proxy</text>
+  <text x="300" y="454" text-anchor="middle" fill="#8b949e" font-size="11">DDoS protection · geo-distribution</text>
+
+  <!-- ================== SERVICES LANE ================== -->
+
+  <!-- Fingerprinting engine (T2S) -->
+  <rect x="100" y="540" width="180" height="100" rx="8" fill="#161b22" stroke="#f0883e" stroke-width="1.5"/>
+  <text x="190" y="565" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">T2S Matcher</text>
+  <text x="190" y="588" text-anchor="middle" fill="#8b949e" font-size="11">Always-on · 0.5 vCPU</text>
+  <text x="190" y="606" text-anchor="middle" fill="#8b949e" font-size="11">Hash DB in memory</text>
+  <text x="190" y="624" text-anchor="middle" fill="#8b949e" font-size="11">Latency: 1-3s per match</text>
+
+  <!-- T2S Fingerprinter -->
+  <rect x="320" y="540" width="180" height="100" rx="8" fill="#161b22" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <text x="410" y="565" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">T2S Fingerprinter</text>
+  <text x="410" y="588" text-anchor="middle" fill="#8b949e" font-size="11">On-demand · scales to 0</text>
+  <text x="410" y="606" text-anchor="middle" fill="#8b949e" font-size="11">4 vCPU · cold start ~30s</text>
+  <text x="410" y="624" text-anchor="middle" fill="#8b949e" font-size="11">Triggered by uploads</text>
+
+  <!-- Data layer (GraphQL) -->
+  <rect x="540" y="540" width="180" height="100" rx="8" fill="#161b22" stroke="#a5d6ff" stroke-width="1.5"/>
+  <text x="630" y="565" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">Data Layer</text>
+  <text x="630" y="588" text-anchor="middle" fill="#8b949e" font-size="11">GraphQL API</text>
+  <text x="630" y="606" text-anchor="middle" fill="#8b949e" font-size="11">Per-user authorization</text>
+  <text x="630" y="624" text-anchor="middle" fill="#8b949e" font-size="11">4 entities + 3 tables</text>
+
+  <!-- Auth provider -->
+  <rect x="760" y="540" width="180" height="100" rx="8" fill="#161b22" stroke="#d2a8ff" stroke-width="1.5"/>
+  <text x="850" y="565" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">Auth Provider</text>
+  <text x="850" y="588" text-anchor="middle" fill="#8b949e" font-size="11">Two pools (app + admin)</text>
+  <text x="850" y="606" text-anchor="middle" fill="#8b949e" font-size="11">OAuth for web · JWT for API</text>
+  <text x="850" y="624" text-anchor="middle" fill="#8b949e" font-size="11">Domain allowlist on admin</text>
+
+  <!-- Notifications -->
+  <rect x="980" y="540" width="180" height="100" rx="8" fill="#161b22" stroke="#ffa657" stroke-width="1.5"/>
+  <text x="1070" y="565" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="600">Notification Service</text>
+  <text x="1070" y="588" text-anchor="middle" fill="#8b949e" font-size="11">Lambda + FCM</text>
+  <text x="1070" y="606" text-anchor="middle" fill="#8b949e" font-size="11">Direct path (live)</text>
+  <text x="1070" y="624" text-anchor="middle" fill="#8b949e" font-size="11">iOS 16.4+ required</text>
+
+  <!-- ================== DATA / STORAGE LANE ================== -->
+
+  <!-- Hash database -->
+  <rect x="100" y="680" width="180" height="80" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="190" y="705" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">Hash Database</text>
+  <text x="190" y="725" text-anchor="middle" fill="#8b949e" font-size="11">Title → fingerprints</text>
+  <text x="190" y="743" text-anchor="middle" fill="#8b949e" font-size="11">~50 GB per 10K tracks</text>
+
+  <!-- Data layer storage -->
+  <rect x="320" y="680" width="180" height="80" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="410" y="705" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">Data Storage</text>
+  <text x="410" y="725" text-anchor="middle" fill="#8b949e" font-size="11">4 entities + 3 tables</text>
+  <text x="410" y="743" text-anchor="middle" fill="#8b949e" font-size="11">Backups + audit log</text>
+
+  <!-- Public bucket -->
+  <rect x="540" y="680" width="180" height="80" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="630" y="705" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">Public Bucket</text>
+  <text x="630" y="725" text-anchor="middle" fill="#8b949e" font-size="11">AD track audio</text>
+  <text x="630" y="743" text-anchor="middle" fill="#8b949e" font-size="11">Poster images</text>
+
+  <!-- Private bucket -->
+  <rect x="760" y="680" width="180" height="80" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+  <text x="850" y="705" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">Private Bucket</text>
+  <text x="850" y="725" text-anchor="middle" fill="#8b949e" font-size="11">Reference audio</text>
+  <text x="850" y="743" text-anchor="middle" fill="#8b949e" font-size="11">Signed URLs only</text>
+
+  <!-- FCM tokens -->
+  <rect x="980" y="680" width="180" height="80" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="1070" y="705" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">Device Tokens</text>
+  <text x="1070" y="725" text-anchor="middle" fill="#8b949e" font-size="11">Per user, per device</text>
+  <text x="1070" y="743" text-anchor="middle" fill="#8b949e" font-size="11">FCM + APNs tokens</text>
+
+  <!-- ================== ARROWS ================== -->
+
+  <!-- Listener -> Edge -->
+  <line x1="190" y1="220" x2="190" y2="370" stroke="#58a6ff" stroke-width="1.5"/>
+  <polygon points="190,370 186,362 194,362" fill="#58a6ff"/>
+  <text x="200" y="295" fill="#8b949e" font-size="10">HTTPS</text>
+
+  <!-- Admin -> Edge -->
+  <line x1="410" y1="220" x2="410" y2="370" stroke="#d2a8ff" stroke-width="1.5"/>
+  <polygon points="410,370 406,362 414,362" fill="#d2a8ff"/>
+  <text x="420" y="295" fill="#8b949e" font-size="10">HTTPS</text>
+
+  <!-- Edge -> Matcher (T2S) -->
+  <line x1="250" y1="470" x2="190" y2="540" stroke="#f0883e" stroke-width="1.5"/>
+  <polygon points="190,540 186,532 194,532" fill="#f0883e"/>
+  <text x="220" y="510" fill="#8b949e" font-size="10">/t2s/*</text>
+
+  <!-- Edge -> Data Layer -->
+  <line x1="350" y1="470" x2="600" y2="540" stroke="#a5d6ff" stroke-width="1.5"/>
+  <polygon points="600,540 592,536 592,544" fill="#a5d6ff"/>
+  <text x="450" y="510" fill="#8b949e" font-size="10">/api/* (GraphQL)</text>
+
+  <!-- Matcher -> Hash DB -->
+  <line x1="190" y1="640" x2="190" y2="680" stroke="#f0883e" stroke-width="1.5"/>
+  <polygon points="190,680 186,672 194,672" fill="#f0883e"/>
+  <text x="200" y="665" fill="#8b949e" font-size="10">read</text>
+
+  <!-- Fingerprinter -> Hash DB (writes) -->
+  <line x1="380" y1="640" x2="220" y2="680" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <polygon points="220,680 224,672 230,676" fill="#f0883e"/>
+  <text x="290" y="665" fill="#8b949e" font-size="10">write</text>
+
+  <!-- Fingerprinter -> Private bucket -->
+  <line x1="500" y1="640" x2="850" y2="680" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <polygon points="850,680 842,676 844,684" fill="#8b949e"/>
+  <text x="660" y="655" fill="#8b949e" font-size="10">reads reference audio</text>
+
+  <!-- Data Layer -> Data Storage -->
+  <line x1="630" y1="640" x2="410" y2="680" stroke="#a5d6ff" stroke-width="1.5"/>
+  <polygon points="410,680 414,672 418,676" fill="#a5d6ff"/>
+  <text x="510" y="665" fill="#8b949e" font-size="10">read/write</text>
+
+  <!-- Public bucket serves content (to listener via edge) -->
+  <path d="M 630 680 Q 630 600, 600 540" stroke="#3fb950" stroke-width="1.5" fill="none" stroke-dasharray="4 2"/>
+  <text x="640" y="615" fill="#8b949e" font-size="10">content URLs</text>
+
+  <!-- Notification service -> Device tokens -->
+  <line x1="1070" y1="640" x2="1070" y2="680" stroke="#ffa657" stroke-width="1.5"/>
+  <polygon points="1070,680 1066,672 1074,672" fill="#ffa657"/>
+  <text x="1080" y="665" fill="#8b949e" font-size="10">read</text>
+
+  <!-- ================== LEGEND ================== -->
+
+  <g transform="translate(100, 770)">
+    <text x="0" y="0" fill="#8b949e" font-size="11" font-weight="600">Legend:</text>
+    <line x1="50" y1="-4" x2="80" y2="-4" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="85" y="0" fill="#8b949e" font-size="11">Listener flow</text>
+    <line x1="170" y1="-4" x2="200" y2="-4" stroke="#d2a8ff" stroke-width="1.5"/>
+    <text x="205" y="0" fill="#8b949e" font-size="11">Admin flow</text>
+    <line x1="290" y1="-4" x2="320" y2="-4" stroke="#f0883e" stroke-width="1.5"/>
+    <text x="325" y="0" fill="#8b949e" font-size="11">T2S flow</text>
+    <line x1="390" y1="-4" x2="420" y2="-4" stroke="#a5d6ff" stroke-width="1.5"/>
+    <text x="425" y="0" fill="#8b949e" font-size="11">Data flow</text>
+    <line x1="490" y1="-4" x2="520" y2="-4" stroke="#ffa657" stroke-width="1.5"/>
+    <text x="525" y="0" fill="#8b949e" font-size="11">Notification flow</text>
+  </g>
+</svg>

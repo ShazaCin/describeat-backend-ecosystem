@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <!-- Background -->
+  <rect width="1200" height="600" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" fill="#f0f6fc" font-size="22" font-weight="600">T2S Sync Engine — Two-Service Pattern</text>
+  <text x="600" y="65" text-anchor="middle" fill="#8b949e" font-size="13">Matcher (always-on) + Fingerprinter (on-demand) sharing one hash database</text>
+
+  <!-- ================== LISTENER SYNC PATH (top half) ================== -->
+
+  <!-- Step 1: App records audio -->
+  <rect x="80" y="100" width="200" height="70" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="180" y="125" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">1. App records audio</text>
+  <text x="180" y="145" text-anchor="middle" fill="#8b949e" font-size="11">~10s · MP3 encoded</text>
+  <text x="180" y="162" text-anchor="middle" fill="#8b949e" font-size="11">Content-Type: audio/mpeg</text>
+
+  <!-- Step 2: POST /t2s/sync -->
+  <rect x="320" y="100" width="200" height="70" rx="8" fill="#161b22" stroke="#f0883e" stroke-width="1.5"/>
+  <text x="420" y="125" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">2. POST /t2s/sync</text>
+  <text x="420" y="145" text-anchor="middle" fill="#8b949e" font-size="11">filename=userId_ts.mp3</text>
+  <text x="420" y="162" text-anchor="middle" fill="#8b949e" font-size="11">binary body</text>
+
+  <!-- Step 3: Matcher -->
+  <rect x="560" y="100" width="200" height="70" rx="8" fill="#161b22" stroke="#f0883e" stroke-width="2"/>
+  <text x="660" y="125" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">3. Matcher</text>
+  <text x="660" y="145" text-anchor="middle" fill="#8b949e" font-size="11">always-on · 0.5 vCPU</text>
+  <text x="660" y="162" text-anchor="middle" fill="#8b949e" font-size="11">1-3s per request</text>
+
+  <!-- Step 4: Hash DB lookup -->
+  <rect x="800" y="100" width="200" height="70" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="900" y="125" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">4. Hash DB lookup</text>
+  <text x="900" y="145" text-anchor="middle" fill="#8b949e" font-size="11">hash → (titleId, offset)</text>
+  <text x="900" y="162" text-anchor="middle" fill="#8b949e" font-size="11">in-memory</text>
+
+  <!-- Step 5: Response -->
+  <rect x="320" y="220" width="200" height="70" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="420" y="245" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">5. Match result</text>
+  <text x="420" y="265" text-anchor="middle" fill="#8b949e" font-size="11">titleId + offset_seconds</text>
+  <text x="420" y="282" text-anchor="middle" fill="#8b949e" font-size="11">confidence > 0.85</text>
+
+  <!-- Step 6: App plays -->
+  <rect x="80" y="220" width="200" height="70" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="180" y="245" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">6. App plays AD track</text>
+  <text x="180" y="265" text-anchor="middle" fill="#8b949e" font-size="11">seek to offset_seconds</text>
+  <text x="180" y="282" text-anchor="middle" fill="#8b949e" font-size="11">in sync with the show</text>
+
+  <!-- Arrows for listener path -->
+  <line x1="280" y1="135" x2="320" y2="135" stroke="#58a6ff" stroke-width="2"/>
+  <polygon points="320,135 312,131 312,139" fill="#58a6ff"/>
+
+  <line x1="520" y1="135" x2="560" y2="135" stroke="#f0883e" stroke-width="2"/>
+  <polygon points="560,135 552,131 552,139" fill="#f0883e"/>
+
+  <line x1="760" y1="135" x2="800" y2="135" stroke="#f0883e" stroke-width="2"/>
+  <polygon points="800,135 792,131 792,139" fill="#f0883e"/>
+
+  <line x1="800" y1="170" x2="760" y2="220" stroke="#8b949e" stroke-width="2"/>
+  <polygon points="760,220 762,212 768,215" fill="#8b949e"/>
+
+  <line x1="320" y1="255" x2="280" y2="255" stroke="#3fb950" stroke-width="2"/>
+  <polygon points="280,255 288,251 288,259" fill="#3fb950"/>
+
+  <!-- Lane label -->
+  <rect x="40" y="100" width="20" height="190" fill="#58a6ff" opacity="0.2" rx="4"/>
+  <text x="50" y="200" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="600" transform="rotate(-90 50 200)">LISTENER SYNC PATH</text>
+
+  <!-- ================== ADMIN UPLOAD PATH (bottom half) ================== -->
+
+  <!-- Step 1: Admin uploads AD track -->
+  <rect x="80" y="370" width="200" height="70" rx="8" fill="#161b22" stroke="#d2a8ff" stroke-width="1.5"/>
+  <text x="180" y="395" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">1. Admin uploads</text>
+  <text x="180" y="415" text-anchor="middle" fill="#8b949e" font-size="11">title + AD track + poster</text>
+  <text x="180" y="432" text-anchor="middle" fill="#8b949e" font-size="11">via admin portal</text>
+
+  <!-- Step 2: Triggers Fingerprinter -->
+  <rect x="320" y="370" width="200" height="70" rx="8" fill="#161b22" stroke="#f0883e" stroke-width="2" stroke-dasharray="4 2"/>
+  <text x="420" y="395" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">2. Fingerprinter</text>
+  <text x="420" y="415" text-anchor="middle" fill="#8b949e" font-size="11">on-demand · 4 vCPU</text>
+  <text x="420" y="432" text-anchor="middle" fill="#8b949e" font-size="11">cold start ~30s</text>
+
+  <!-- Step 3: Generates hashes -->
+  <rect x="560" y="370" width="200" height="70" rx="8" fill="#161b22" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <text x="660" y="395" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">3. Generate hashes</text>
+  <text x="660" y="415" text-anchor="middle" fill="#8b949e" font-size="11">~85 hashes/sec</text>
+  <text x="660" y="432" text-anchor="middle" fill="#8b949e" font-size="11">~50K per track</text>
+
+  <!-- Step 4: Write to Hash DB -->
+  <rect x="800" y="370" width="200" height="70" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="900" y="395" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">4. Write to Hash DB</text>
+  <text x="900" y="415" text-anchor="middle" fill="#8b949e" font-size="11">new title → hashes</text>
+  <text x="900" y="432" text-anchor="middle" fill="#8b949e" font-size="11">matcher reloads on next</text>
+
+  <!-- Step 5: Fingerprinter scales to 0 -->
+  <rect x="320" y="490" width="200" height="60" rx="8" fill="#161b22" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <text x="420" y="513" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">5. Scale to zero</text>
+  <text x="420" y="530" text-anchor="middle" fill="#8b949e" font-size="11">~$0 when idle</text>
+  <text x="420" y="546" text-anchor="middle" fill="#8b949e" font-size="11">~$0.50 per fingerprint</text>
+
+  <!-- Arrows for admin path -->
+  <line x1="280" y1="405" x2="320" y2="405" stroke="#d2a8ff" stroke-width="2"/>
+  <polygon points="320,405 312,401 312,409" fill="#d2a8ff"/>
+
+  <line x1="520" y1="405" x2="560" y2="405" stroke="#f0883e" stroke-width="2" stroke-dasharray="4 2"/>
+  <polygon points="560,405 552,401 552,409" fill="#f0883e"/>
+
+  <line x1="760" y1="405" x2="800" y2="405" stroke="#f0883e" stroke-width="2" stroke-dasharray="4 2"/>
+  <polygon points="800,405 792,401 792,409" fill="#f0883e"/>
+
+  <line x1="420" y1="440" x2="420" y2="490" stroke="#f0883e" stroke-width="2" stroke-dasharray="4 2"/>
+  <polygon points="420,490 416,482 424,482" fill="#f0883e"/>
+
+  <!-- Lane label -->
+  <rect x="40" y="370" width="20" height="180" fill="#d2a8ff" opacity="0.2" rx="4"/>
+  <text x="50" y="460" text-anchor="middle" fill="#d2a8ff" font-size="11" font-weight="600" transform="rotate(-90 50 460)">ADMIN UPLOAD PATH</text>
+
+  <!-- ================== HASH DATABASE (shared) ================== -->
+
+  <rect x="800" y="490" width="200" height="60" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <text x="900" y="513" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="600">Matcher reloads</text>
+  <text x="900" y="530" text-anchor="middle" fill="#8b949e" font-size="11">in-memory cache</text>
+  <text x="900" y="546" text-anchor="middle" fill="#8b949e" font-size="11">periodic (5 min)</text>
+
+  <!-- ================== LEGEND ================== -->
+
+  <g transform="translate(80, 565)">
+    <text x="0" y="0" fill="#8b949e" font-size="11" font-weight="600">Pattern:</text>
+    <text x="60" y="0" fill="#8b949e" font-size="11">Matcher is always-on for sync requests. Fingerprinter runs only when new content is uploaded, then scales to zero. They share the Hash DB but never run in the same process — different CPU profiles, different lifecycles.</text>
+  </g>
+</svg>

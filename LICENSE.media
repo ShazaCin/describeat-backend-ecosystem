@@ -1,0 +1,120 @@
+# LICENSE — Media and Audio Content
+
+> **This document does NOT grant any rights to media content. It restricts them.**
+
+This repository (`describeat-backend-ecosystem`) contains **no** audio description tracks, no reference audio, no fingerprint data, no poster images, and no other media content. It is documentation only.
+
+If you deploy DescribeAT, you are responsible for sourcing your own audio description content under whatever licenses apply in your jurisdiction.
+
+---
+
+## What this repository does not contain
+
+| Asset type | In this repo? | Notes |
+|------------|---------------|-------|
+| AD track audio files | No | Not redistributed. License them from a content provider or produce them yourself. |
+| Reference audio (movie/TV soundtracks) | No | Copyrighted by the original rights holders. Not redistributed. |
+| Fingerprint hash databases | No | Generated from the reference audio. Re-generate from your own content. |
+| Poster images / stills | No | Copyrighted by the original rights holders. Not redistributed. |
+| Title metadata (real titles, actors, etc.) | No | Anonymised examples in `data-examples/` only. Do not treat them as authoritative. |
+| Narrator voice recordings | No | Produced by voice talent under separate contracts. Not redistributed. |
+
+---
+
+## What you need to license when you deploy
+
+If you self-host DescribeAT, the following media-related activities have their own licensing requirements that are **outside the scope of this repository's license**:
+
+1. **Acquiring reference audio** for the titles you want to support. This is typically the original movie/TV audio and is subject to copyright law in your jurisdiction.
+
+2. **Acquiring or producing AD track audio**. Professional AD tracks are produced by describer services under contract. Open-source or volunteer-produced AD tracks may exist in your jurisdiction; verify the license before using.
+
+3. **Storing and serving the audio** to your users. The storage and serving of copyrighted audio may require additional rights (e.g. a public performance license, a streaming license, or a distribution agreement).
+
+4. **Fingerprinting the audio**. The act of generating fingerprints from copyrighted audio may have legal implications in your jurisdiction, particularly if the fingerprints are derived works. Consult a lawyer.
+
+5. **Collecting user feedback** that may contain descriptions of copyrighted content. Ensure your privacy policy and data handling practices comply with applicable law.
+
+6. **Sending push notifications** that may reference specific titles. The notification content may be subject to copyright or trademark considerations.
+
+This list is not exhaustive. It is a starting point for your own legal review.
+
+---
+
+## Why the code and content licenses are separate
+
+The DescribeAT project is open-sourced under AGPLv3. The code license is designed to ensure that improvements to the software benefit the community.
+
+The audio content, however, is not created by the DescribeAT project. It is created by describers, actors, writers, and other rights holders who have their own licensing terms. The code license cannot and does not grant rights to their work.
+
+Separating the two licenses:
+
+1. **Respects the rights of content creators.** The AD content they produce is theirs to license.
+2. **Allows the code to be freely used.** You can clone, modify, and deploy DescribeAT without needing rights to any specific content.
+3. **Clarifies the responsibilities of self-hosters.** You are responsible for sourcing your own content under terms that work for your jurisdiction and use case.
+
+---
+
+## For content creators and describer services
+
+If you produce AD content and want to make it available to DescribeAT deployments, the AGPLv3 license of this repository does not apply to your content. You can license your content under whatever terms you choose, including:
+
+- **CC-BY-4.0** (attribution required, commercial use allowed)
+- **CC-BY-SA-4.0** (attribution required, share-alike required, commercial use allowed)
+- **CC-BY-NC-4.0** (attribution required, non-commercial only)
+- **CC-BY-NC-SA-4.0** (attribution required, non-commercial, share-alike)
+- **Custom commercial licenses** (negotiated per-deployment)
+
+We recommend CC-BY-4.0 or CC-BY-SA-4.0 for the broadest reusability. NC variants limit who can use your content, which may not align with the project's accessibility mission.
+
+When you contribute AD content to a DescribeAT deployment, include a `LICENSE.media` file alongside the content specifying the license terms. Self-hosters should verify the license before using your content.
+
+---
+
+## For self-hosters: what to put in your own LICENSE.media
+
+When you deploy DescribeAT, create a `LICENSE.media` file in your deployment that documents the licenses of the content you're serving. Example:
+
+```markdown
+# License — Media Content for {your-deployment-name}
+
+This deployment serves the following media content under the following licenses:
+
+## Reference audio
+
+- The Matrix (1999) — Reference audio sourced under educational fair use
+- Inception (2010) — Reference audio licensed from {provider}
+- (etc.)
+
+## Audio description tracks
+
+- The Matrix AD — CC-BY-4.0, narrator: {name}
+- Inception AD — CC-BY-4.0, narrator: {name}
+- (etc.)
+
+## Restrictions
+
+- The reference audio is for fingerprinting purposes only. It is not served to users.
+- The AD tracks are served to authenticated users under the licenses above.
+- Users may not redistribute the AD tracks.
+
+## Contact
+
+For licensing questions: {your-contact-email}
+```
+
+The `LICENSE.media` file is a contract with your users. It should be accurate and complete.
+
+---
+
+## Disclaimer
+
+This document is not legal advice. It is a starting point for your own legal review. The DescribeAT project, its contributors, and any associated organisations disclaim all liability for the licensing practices of self-hosters and content contributors. Self-hosters and content contributors are responsible for ensuring their own compliance with applicable law.
+
+---
+
+## Related
+
+- [LICENSE](../LICENSE) — the AGPLv3 license for the code and documentation in this repository
+- [CONTRIBUTING.md](../CONTRIBUTING.md) — how to contribute to this repository
+- [07-deploy-your-own.md](../docs/07-deploy-your-own.md) — deploying DescribeAT

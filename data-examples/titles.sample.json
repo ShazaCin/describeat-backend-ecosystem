@@ -1,0 +1,51 @@
+[
+  {
+    "titleId": "2b237778-288a-4b05-b075-798804d26537",
+    "publicEnabled": 1,
+    "createdAt": 1655728497086,
+    "score": 0,
+    "rated": "9",
+    "runtimeMinutes": 26,
+    "genre": ["historical", "education", "research"],
+    "writers": ["<redacted>"],
+    "title": "<redacted>",
+    "year": 2022,
+    "language": ["en"],
+    "narrators": ["<redacted>"],
+    "releaseDate": 1655728497086,
+    "images": ["public/images/<redacted>.jpg"],
+    "wheretowatch": ["<redacted>"],
+    "fingerprintingProgress": 100
+  },
+  {
+    "titleId": "23481f22-e492-4122-bb45-0af7ff0efae6",
+    "publicEnabled": 1,
+    "createdAt": 1661325157109,
+    "score": 0,
+    "rated": "-",
+    "runtimeMinutes": 34,
+    "genre": ["art tour"],
+    "writers": ["<redacted>"],
+    "title": "<redacted>",
+    "year": 2022,
+    "language": ["en"],
+    "narrators": ["<redacted>"],
+    "fingerprintingProgress": 100
+  },
+  {
+    "titleId": "90b0de82-e98b-462c-8007-cb6f65c4f415",
+    "publicEnabled": 1,
+    "createdAt": 1696499258813,
+    "score": 0,
+    "actors": ["<redacted>"],
+    "rated": "9",
+    "runtimeMinutes": 206,
+    "genre": ["autobiography"],
+    "wheretowatch": ["<redacted>"],
+    "title": "<redacted>",
+    "year": 2023,
+    "language": ["en"],
+    "narrators": ["<redacted>"],
+    "fingerprintingProgress": 75
+  }
+]
