@@ -1,6 +1,6 @@
 # DescribeAT Backend & Ecosystem
 
-> **Companion documentation to [DescribeAT App](https://gitlab.com/shazacin/describeat-app) — the listener-facing PWA.**
+> **Companion documentation to [DescribeAT App](https://github.com/ShazaCin/describeat-app-public) — the listener-facing PWA.**
 > This repository documents the **backend infrastructure, data model, deployment patterns, and operational knowledge** that the DescribeAT app depends on.
 
 ---
@@ -9,7 +9,7 @@
 
 DescribeAT is an audio description (AD) sync app for blind and visually impaired users. When a user is watching a movie or TV show on a separate device (TV, laptop, cinema), they tap "sync" in the DescribeAT app, it records a few seconds of ambient audio, and the backend figures out **what they're watching** and **at what offset** to start the AD audio track at.
 
-The app itself is in the [`describeat-app`](https://gitlab.com/shazacin/describeat-app) repository. **This** repository is the documentation of everything that runs behind it: the audio fingerprinting engine, the data model, the storage, the auth, the deployment.
+The app itself is in the [`describeat-app`](https://github.com/ShazaCin/describeat-app-public) repository. **This** repository is the documentation of everything that runs behind it: the audio fingerprinting engine, the data model, the storage, the auth, the deployment.
 
 ---
 
@@ -98,7 +98,7 @@ If you deploy a modified DescribeAT backend as a service accessible to the publi
 
 ## What this repository is NOT
 
-- **Not the application code.** That lives in [describeat-app](https://gitlab.com/shazacin/describeat-app).
+- **Not the application code.** That lives in [describeat-app](https://github.com/ShazaCin/describeat-app-public).
 - **Not a deployed service.** You cannot "use" this repository — you read it, follow the patterns, and deploy your own.
 - **Not the AD content library.** AD tracks are Shakila/Sibonga's curated catalogue, licensed separately, and not redistributed from this repo.
 - **Not a promise of feature parity.** The original Shazacin instance had proprietary integrations (FCM, custom fingerprinting, paid content licensing) that are documented for context but may not be reproducible by self-hosters.
