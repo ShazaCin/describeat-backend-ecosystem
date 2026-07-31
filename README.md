@@ -43,9 +43,7 @@ describeat-backend-ecosystem/
 │   ├── 08-cost-estimates.md        ← what to budget for a small self-hosted deployment
 │   ├── 09-orphaned-resources.md    ← how to keep your account tidy
 │   ├── 10-adrs.md                  ← architecture decision records
-│   ├── 11-troubleshooting-faq.md   ← 22 issues + 22 FAQ items (Symptom → Cause → Diagnostic → Fix)
-│   ├── delivery-brief-pack.md      ← handover guide for Shazacin (repo ownership + contributor engagement)
-│   └── launch-website-page-brief.md ← creative brief for the shazacin.com/describeat landing page
+│   └── 11-troubleshooting-faq.md   ← 22 issues + 22 FAQ items (Symptom → Cause → Diagnostic → Fix)
 │
 ├── diagrams/                       ← SVG architecture diagrams
 │   ├── 01-overview.svg
