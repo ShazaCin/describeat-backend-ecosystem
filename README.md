@@ -26,6 +26,11 @@ describeat-backend-ecosystem/
 ├── SECURITY.md                     ← how to report vulnerabilities
 ├── TRADEMARK.md                    ← DescribeAT and Shazacin trademark usage policy
 ├── .gitlab-ci.yml                  ← CI pipeline (markdown lint, link check, secret scan, JSON/SVG validation)
+├── .gitlab/                        ← GitLab-specific templates
+│   ├── issue_templates/            ← bug report, feature request, documentation, question
+│   └── merge_request_templates/    ← MR template with DCO checklist
+├── .github/                        ← GitHub-compatible templates (for cross-platform use)
+│   └── ISSUE_TEMPLATE/             ← bug report, feature request, documentation, question
 │
 ├── docs/                           ← the canonical reference
 │   ├── 00-overview.md              ← mental model, request paths, "is this for me?"
