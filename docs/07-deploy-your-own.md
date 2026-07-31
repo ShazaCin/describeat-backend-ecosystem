@@ -274,7 +274,7 @@ DistributionConfig:
 
 ### Step 7: Point the PWA at your backend
 
-The DescribeAT PWA (in the [`describeat-app`](https://gitlab.com/shazacin/describeat-app) repository) needs to know your backend endpoints. These are environment variables in the PWA's build:
+The DescribeAT PWA (in the [`describeat-app`](https://github.com/ShazaCin/describeat-app-public) repository) needs to know your backend endpoints. These are environment variables in the PWA's build:
 
 ```bash
 # .env.production

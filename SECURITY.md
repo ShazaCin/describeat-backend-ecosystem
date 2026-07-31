@@ -15,12 +15,12 @@ This is a documentation project, not a long-running software release. Security u
 
 ## Reporting a vulnerability
 
-**Please do not report security vulnerabilities through public GitLab issues.**
+**Please do not report security vulnerabilities through public GitHub issues.**
 
 Instead, report them privately via one of these channels:
 
 1. **Email:** [security contact — to be added before public launch]
-2. **GitLab private vulnerability disclosure:** If the repository is hosted on GitLab.com, you can use [GitLab's confidential issue disclosure](https://docs.gitlab.com/ee/user/project/issues/confidential_issues.html) feature.
+2. **GitHub security advisories:** Use [GitHub's private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability) feature (Security tab → Report a vulnerability).
 
 When reporting, please include:
 
