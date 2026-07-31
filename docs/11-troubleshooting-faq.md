@@ -139,7 +139,7 @@ aws acm list-certificates --region eu-west-1 --output table  # should NOT includ
 
 **Fix:** Re-issue the certificate in `us-east-1`, re-point your distribution's `AcmCertificateArn` to the new ARN, and redeploy.
 
-**Why this happens:** This is a hard CloudFront constraint — not a bug. ACM is a regional service; CloudFront is global. The only region CloudFront trusts for ACM is `us-east-1`. The reference deployment's certs (`app.shazacin.com`, `admin.shazacin.com`, `auth.shazacin.com`, etc.) are all in `us-east-1` — see [`00-inventory.md §12`](https://example.com/inventory) for the list.
+**Why this happens:** This is a hard CloudFront constraint — not a bug. ACM is a regional service; CloudFront is global. The only region CloudFront trusts for ACM is `us-east-1`. Your ACM certificates for any CloudFront-backed domains must be requested in `us-east-1`, regardless of where the rest of your infrastructure lives.
 
 ---
 
@@ -438,7 +438,7 @@ navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(r => console.log
 1. Use `aws lambda update-function-configuration --environment "Variables={FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n}"` (the `\n` are literal escape sequences).
 2. Or store the key in AWS Secrets Manager and load it at cold start, avoiding env var entirely. (This is the recommended approach.)
 
-**Reference:** The reference deployment stores `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` as Lambda env vars on `combined_lambda`. **These are the only secrets in the entire backend.** When publishing your own deployment, redact them from any committed config — see `00-inventory.md §17` in the reference docs.
+**Reference:** The reference deployment stores `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` as Lambda env vars on `combined_lambda`. **These are the only secrets in the entire backend.** When publishing your own deployment, redact them from any committed config and use a managed secret store.
 
 ---
 
@@ -516,7 +516,7 @@ aws appsync list-resolvers --api-id 4btq2hqzbrbqbczbqtmufmauha --type-name Shaza
 
 **Fix:** For each type, create resolvers that map the GraphQL operation to a DynamoDB data source. The easiest path is to re-run `amplify push` from the admin Amplify project — it regenerates all resolvers from the schema.
 
-If you're not using Amplify, you must manually create resolvers using the DynamoDB data source name (`shazacin_title_meta_db`, `shazacin_metadata_ad_tracks`, etc. — see [`00-inventory.md §4.1`](https://example.com/inventory) for the full mapping).
+If you're not using Amplify, you must manually create resolvers using your DynamoDB data source names (e.g. `describeat_title_meta`, `describeat_ad_tracks`, etc. — the exact names depend on your deployment).
 
 ---
 

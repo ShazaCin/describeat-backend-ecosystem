@@ -60,25 +60,27 @@ git commit -s -m "docs: clarify the two-pool auth model"
 
 The `-s` flag adds a `Signed-off-by:` line to your commit message, certifying that you have the right to submit the contribution under the project's license.
 
-### 4. Open a pull request
+### 4. Open a merge request
 
-PRs should include:
+MRs should include:
 
 - A descriptive title (e.g. "docs: add Kubernetes deployment recipe" not "Update README")
 - A description of what changed and why
 - A reference to any related issues
 
-If your PR is a documentation change, link to the specific file(s) you changed. If your PR is a code change (example scripts, etc.), include a way to test it.
+If your MR is a documentation change, link to the specific file(s) you changed. If your MR is a code change (example scripts, etc.), include a way to test it.
 
 ### 5. CI checks
 
-CI runs on every PR:
+CI runs on every push and merge request via GitLab CI (see `.gitlab-ci.yml`):
 
 - **Markdown lint** — checks for style violations
 - **Link check** — verifies all links resolve
 - **Secret scan** — verifies no real AWS IDs, API keys, etc. are present
 - **JSON validation** — for any data files
 - **SVG validation** — for any diagram changes
+
+Some checks are set to `allow_failure: true` (they report but don't block the MR). The secret scan and JSON validation are blocking — if they fail, the MR cannot merge.
 
 If CI fails, fix the issues. If CI is wrong, open an issue explaining.
 

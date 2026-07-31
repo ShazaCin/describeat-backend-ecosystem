@@ -6,7 +6,7 @@
 
 ## The project in one paragraph
 
-DescribeAT is an audio-description sync app for blind and visually impaired users. It was built and operated as a closed commercial product by Shazacin. In 2026, Shazacin decided to release the application code under AGPLv3 so the blind and VI community can contribute fixes, improvements, and new features. This repository is the sanitised public release of the listener-facing PWA. It is one of three open-source repos that make up the DescribeAT system (the others are [describeat-admin-public](https://github.com/ShazaCin/describeat-admin-public) and [describeat-backend-ecosystem](https://github.com/ShazaCin/describeat-backend-ecosystem)).
+DescribeAT is an audio-description sync app for blind and visually impaired users. It was built and operated as a closed commercial product by Shazacin. In 2026, Shazacin decided to release the application code under AGPLv3 so the blind and VI community can contribute fixes, improvements, and new features. This repository is the sanitised public release of the listener-facing PWA. It is one of three open-source repos that make up the DescribeAT system (the others are [describeat-admin-public](https://github.com/ShazaCin/describeat-admin-public) and [describeat-backend-ecosystem](https://gitlab.com/shazacin/describeat-backend-ecosystem)).
 
 ## Tier model: Contributor → Committer → Maintainer
 

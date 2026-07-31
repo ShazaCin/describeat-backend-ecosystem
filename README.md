@@ -22,7 +22,10 @@ describeat-backend-ecosystem/
 ├── LICENSE.media                   ← separate terms for AD content
 ├── CONTRIBUTING.md                 ← how to contribute to these docs
 ├── CODE_OF_CONDUCT.md
+├── GOVERNANCE.md                   ← project governance (tiers, veto, conflict resolution)
 ├── SECURITY.md                     ← how to report vulnerabilities
+├── TRADEMARK.md                    ← DescribeAT and Shazacin trademark usage policy
+├── .gitlab-ci.yml                  ← CI pipeline (markdown lint, link check, secret scan, JSON/SVG validation)
 │
 ├── docs/                           ← the canonical reference
 │   ├── 00-overview.md              ← mental model, request paths, "is this for me?"
@@ -35,7 +38,10 @@ describeat-backend-ecosystem/
 │   ├── 07-deploy-your-own.md       ← step-by-step: spin up your own instance
 │   ├── 08-cost-estimates.md        ← what to budget for a small self-hosted deployment
 │   ├── 09-orphaned-resources.md    ← how to keep your account tidy
-│   └── 10-adrs.md                  ← architecture decision records
+│   ├── 10-adrs.md                  ← architecture decision records
+│   ├── 11-troubleshooting-faq.md   ← 22 issues + 22 FAQ items (Symptom → Cause → Diagnostic → Fix)
+│   ├── delivery-brief-pack.md      ← handover guide for Shazacin (repo ownership + contributor engagement)
+│   └── launch-website-page-brief.md ← creative brief for the shazacin.com/describeat landing page
 │
 ├── diagrams/                       ← SVG architecture diagrams
 │   ├── 01-overview.svg

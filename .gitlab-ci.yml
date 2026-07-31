@@ -1,0 +1,85 @@
+# CI for DescribeAT Backend & Ecosystem (documentation repo)
+# Runs on every push and MR to main
+
+stages:
+  - check
+
+variables:
+  MARKDOWN_LINT_CONFIG: |
+    {
+      "default": true,
+      "MD013": false,
+      "MD033": false,
+      "MD041": false,
+      "MD024": { "siblings_only": true }
+    }
+
+markdown-lint:
+  stage: check
+  image: node:20-alpine
+  script:
+    - npm install -g markdownlint-cli2
+    - markdownlint-cli2 "docs/**/*.md" "README.md" "CONTRIBUTING.md" "SECURITY.md" "GOVERNANCE.md" "TRADEMARK.md" "workflows/**/*.md" "data-examples/README.md" "examples/*.md"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+
+link-check:
+  stage: check
+  image: node:20-alpine
+  script:
+    - npm install -g markdown-link-check
+    - |
+      find . -name "*.md" -not -path "./.git/*" -not -path "./node_modules/*" | while read f; do
+        markdown-link-check "$f" --quiet --alive 200 || true
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+
+json-validate:
+  stage: check
+  image: node:20-alpine
+  script:
+    - |
+      find . -name "*.json" -not -path "./.git/*" -not -path "./node_modules/*" | while read f; do
+        echo "Validating $f"
+        node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" || exit 1
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+secret-scan:
+  stage: check
+  image: alpine:latest
+  script:
+    - |
+      echo "Scanning for common secret patterns..."
+      if grep -rnE "(AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{36}|sk-[a-zA-Z0-9]{48}|-----BEGIN (RSA |EC )?PRIVATE KEY-----)" --include="*.md" --include="*.json" --include="*.yml" --include="*.yaml" . 2>/dev/null | grep -v ".git/"; then
+        echo "⚠️  Potential secrets found!"
+        exit 1
+      fi
+      echo "✅ No secrets found."
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+svg-validate:
+  stage: check
+  image: alpine:latest
+  script:
+    - |
+      if [ -d diagrams ]; then
+        for f in diagrams/*.svg; do
+          echo "Validating $f"
+          head -1 "$f" | grep -q "<?xml" || head -1 "$f" | grep -q "<svg" || { echo "Invalid SVG: $f"; exit 1; }
+        done
+        echo "✅ All SVGs valid."
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
