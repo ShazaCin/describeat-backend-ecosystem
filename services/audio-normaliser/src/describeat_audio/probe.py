@@ -94,6 +94,7 @@ class AudioInfo:
     duration_seconds: float
     size_bytes: int
     bit_rate_bps: int | None = None
+    stream_bit_rate_bps: int | None = None
     sample_fmt: str | None = None
 
     @property
@@ -226,6 +227,7 @@ def probe(path: str | Path, timeout: int = DEFAULT_TIMEOUT_SECONDS) -> AudioInfo
         duration_seconds=duration,
         size_bytes=size_bytes,
         bit_rate_bps=int(_to_float(fmt.get("bit_rate"), 0)) or None,
+        stream_bit_rate_bps=int(_to_float(stream.get("bit_rate"), 0)) or None,
         sample_fmt=stream.get("sample_fmt"),
     )
 
