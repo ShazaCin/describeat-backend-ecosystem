@@ -17,7 +17,12 @@ from describeat_audio.profiles import AD_TRACK, FINGERPRINT, load_profile
 from .conftest import requires_ffmpeg
 
 
-def _info(codec: str = "pcm_s16le", sample_rate: int = 44100, channels: int = 2) -> AudioInfo:
+def _info(
+    codec: str = "pcm_s16le",
+    sample_rate: int = 44100,
+    channels: int = 2,
+    stream_bit_rate_bps: int | None = None,
+) -> AudioInfo:
     return AudioInfo(
         path="x",
         format_name="wav",
@@ -26,6 +31,17 @@ def _info(codec: str = "pcm_s16le", sample_rate: int = 44100, channels: int = 2)
         channels=channels,
         duration_seconds=3.0,
         size_bytes=1000,
+        stream_bit_rate_bps=stream_bit_rate_bps,
+    )
+
+
+def _mp3_info(stream_bit_rate_bps: int | None) -> AudioInfo:
+    """An AD-track-shaped probe result: mono MP3 at 44.1 kHz."""
+    return _info(
+        codec="mp3",
+        sample_rate=44100,
+        channels=1,
+        stream_bit_rate_bps=stream_bit_rate_bps,
     )
 
 
@@ -69,27 +85,69 @@ def test_a_lossless_codec_other_than_the_profiles_own_does_not_conform():
 
 
 def test_a_structural_match_alone_is_not_enough_for_the_loudness_profile():
-    assert not already_conforms(_info(codec="mp3", channels=1), AD_TRACK)
+    assert not already_conforms(_mp3_info(128_000), AD_TRACK)
 
 
 def test_a_structural_match_on_target_conforms():
-    assert already_conforms(_info(codec="mp3", channels=1), AD_TRACK, _loudness(-16.0))
+    assert already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(-16.0))
 
 
 def test_a_structural_match_off_target_does_not_conform():
-    assert not already_conforms(_info(codec="mp3", channels=1), AD_TRACK, _loudness(-35.0))
+    assert not already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(-35.0))
 
 
 def test_an_unmeasurable_loudness_does_not_conform():
-    assert not already_conforms(_info(codec="mp3", channels=1), AD_TRACK, _loudness(float("-inf")))
+    assert not already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(float("-inf")))
 
 
 def test_the_tolerated_deviation_is_the_documented_one():
     """One LU over or under target still conforms; two does not."""
-    assert already_conforms(_info(codec="mp3", channels=1), AD_TRACK, _loudness(-16.9))
-    assert already_conforms(_info(codec="mp3", channels=1), AD_TRACK, _loudness(-15.1))
-    assert not already_conforms(_info(codec="mp3", channels=1), AD_TRACK, _loudness(-17.2))
-    assert not already_conforms(_info(codec="mp3", channels=1), AD_TRACK, _loudness(-14.8))
+    assert already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(-16.9))
+    assert already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(-15.1))
+    assert not already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(-17.2))
+    assert not already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(-14.8))
+
+
+# --- The AD-track profile: the bitrate is part of the decision ----------------
+
+
+def test_the_profile_bitrate_conforms():
+    """The service writes 128 kbps, and that is what the guard looks for."""
+    assert already_conforms(_mp3_info(128_000), AD_TRACK, _loudness(-16.0))
+
+
+def test_a_higher_bitrate_does_not_conform():
+    """A file encoded at a different bitrate still has to be converted.
+
+    The documentation accepts 128-192 kbps for narration, and a track
+    arriving at 192 kbps with the right rate, channels and loudness is a
+    perfectly ordinary upload. Treating it as already normalised means it
+    is never delivered at all.
+    """
+    assert not already_conforms(_mp3_info(192_000), AD_TRACK, _loudness(-16.0))
+    assert not already_conforms(_mp3_info(320_000), AD_TRACK, _loudness(-16.0))
+
+
+def test_a_lower_bitrate_does_not_conform():
+    assert not already_conforms(_mp3_info(64_000), AD_TRACK, _loudness(-16.0))
+
+
+def test_a_variable_bitrate_file_does_not_conform():
+    """A VBR encode reports a different figure, so it is not our output."""
+    assert not already_conforms(_mp3_info(38_375), AD_TRACK, _loudness(-16.0))
+
+
+def test_an_unmeasurable_bitrate_does_not_conform():
+    """A file whose stream bitrate cannot be read is never assumed finished."""
+    assert not already_conforms(_mp3_info(None), AD_TRACK, _loudness(-16.0))
+
+
+def test_the_tolerated_bitrate_deviation_is_the_documented_one():
+    """The encoder's rounding is absorbed; a real step up is not."""
+    assert already_conforms(_mp3_info(128_000 + 1_500), AD_TRACK, _loudness(-16.0))
+    assert already_conforms(_mp3_info(128_000 - 1_500), AD_TRACK, _loudness(-16.0))
+    assert not already_conforms(_mp3_info(128_000 + 4_000), AD_TRACK, _loudness(-16.0))
+    assert not already_conforms(_mp3_info(128_000 - 4_000), AD_TRACK, _loudness(-16.0))
 
 
 # --- Real files ----------------------------------------------------------------

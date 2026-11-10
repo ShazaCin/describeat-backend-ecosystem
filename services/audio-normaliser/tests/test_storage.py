@@ -7,10 +7,13 @@ network access and no AWS credentials.
 from __future__ import annotations
 
 import json
+import subprocess
 
 import pytest
 
 from describeat_audio.errors import DescribeAtAudioError
+from describeat_audio.probe import measure_loudness
+from describeat_audio.profiles import AD_TRACK
 from describeat_audio.storage import (
     DEFAULT_ROUTES,
     Route,
@@ -266,6 +269,53 @@ def test_the_fingerprint_write_back_is_left_alone(stereo_flac):
     second = normalise_object("uploads", written_key, client, routes=routes)
     assert second is None
     assert client.uploads == uploads_after_first
+
+
+@requires_ffmpeg
+def test_a_track_at_the_wrong_bitrate_is_still_delivered(tmp_path):
+    """A track encoded at a different bitrate has to reach the destination.
+
+    The documentation accepts 128-192 kbps for narration. A track that
+    arrives at 192 kbps, with the right rate, channels and loudness, is a
+    perfectly ordinary upload -- but without a bitrate check the guard
+    mistakes it for the service's own output and drops it, so nothing is
+    ever written to the destination bucket.
+    """
+    raw = tmp_path / "raw.mp3"
+    source = tmp_path / "narration-192.mp3"
+    subprocess.run(
+        [
+            "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
+            "-f", "lavfi", "-i",
+            "sine=frequency=440:duration=3:sample_rate=44100",
+            "-ac", "1", "-c:a", "libmp3lame", "-b:a", "192k", str(raw),
+        ],
+        check=True,
+        capture_output=True,
+    )
+    # Bring it to the profile's target loudness, which is what a delivered
+    # narration track looks like. Without this the loudness check would
+    # catch the file anyway and the bitrate gap would stay hidden.
+    measured = measure_loudness(raw)
+    gain = AD_TRACK.loudness_lufs - measured.integrated_lufs
+    subprocess.run(
+        [
+            "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
+            "-i", str(raw), "-af", f"volume={gain:.4f}dB",
+            "-c:a", "libmp3lame", "-b:a", "192k", str(source),
+        ],
+        check=True,
+        capture_output=True,
+    )
+
+    key = "audio-description-tracks-to-process/track.mp3"
+    client = FakeS3Client({("uploads", key): source.read_bytes()})
+    routes = load_routes(json.dumps({"audio-description-tracks-to-process/": "ad-track"}))
+
+    normalise_object("uploads", key, client, routes=routes)
+
+    uploaded_keys = [(bucket, key) for bucket, key, *_ in client.uploads]
+    assert uploaded_keys == [("uploads", "audio-description-tracks-to-process/track.mp3")]
 
 
 @requires_ffmpeg

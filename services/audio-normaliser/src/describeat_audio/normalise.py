@@ -55,6 +55,14 @@ DURATION_TOLERANCE = 0.001
 #: How far the measured loudness may land from the target, in LU.
 LOUDNESS_TOLERANCE_LU = 1.0
 
+#: How far the measured stream bitrate may land from the target, in bits
+#: per second. The comparison is against the *stream* figure, which is
+#: exact for a constant-bitrate encode, so this only has to absorb the
+#: encoder's rounding. It is far narrower than the gap between the
+#: bitrates it has to tell apart: 128 kbps and 192 kbps are 64 kbps
+#: apart, and the nearest standard step above 128 kbps is 16 kbps.
+BITRATE_TOLERANCE_BPS = 2_000
+
 
 @dataclass(frozen=True)
 class NormalisationReport:
@@ -234,8 +242,8 @@ def already_conforms(
 ) -> bool:
     """Whether a probed file already meets a profile's targets.
 
-    The structural checks (codec, sample rate, channel count) come from the
-    probe alone. A profile with a loudness target additionally needs
+    The structural checks (codec, sample rate, channel count, bitrate) come
+    from the probe alone. A profile with a loudness target additionally needs
     ``loudness`` measured on the same file: when it is not supplied, an
     otherwise-matching file is reported as *not* conforming, so a caller
     never skips a file it has not measured.
@@ -262,6 +270,29 @@ def already_conforms(
             return False
     elif info.codec != "mp3":
         return False
+
+    if profile.bitrate_kbps is not None:
+        # A lossy profile also specifies a bitrate, and the guard has to
+        # honour it: without this, an MP3 at 320 kbps but the right rate,
+        # channels and loudness is treated as already normalised and is
+        # never delivered at all.
+        #
+        # The comparison uses the *stream* bitrate rather than the
+        # container's. The container figure includes tags and padding, so
+        # it drifts with the length of the file -- the service's own output
+        # measured between 128 and 148 kbps depending on duration, which is
+        # far too loose to distinguish 128 kbps from 192 kbps. The stream
+        # figure is exact for a constant-bitrate encode: every output the
+        # service has produced measures 128000, with no spread at all.
+        #
+        # The tolerance absorbs the encoder's rounding, so a file the
+        # service wrote is never mistaken for something it did not. It is
+        # narrow enough that a genuinely different bitrate still fails.
+        if info.stream_bit_rate_bps is None:
+            return False
+        target_bps = profile.bitrate_kbps * 1000
+        if abs(info.stream_bit_rate_bps - target_bps) > BITRATE_TOLERANCE_BPS:
+            return False
 
     if profile.loudness_lufs is not None:
         if loudness is None:
