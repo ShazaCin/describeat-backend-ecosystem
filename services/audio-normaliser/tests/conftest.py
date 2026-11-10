@@ -85,6 +85,23 @@ def stereo_flac(tmp_path):
 
 
 @pytest.fixture
+def right_rate_flac(tmp_path):
+    """A lossless 44.1 kHz stereo FLAC -- the right rate, but still an input.
+
+    The project documentation accepts FLAC as reference audio, and the
+    fingerprint profile writes 16-bit PCM. A FLAC at the right rate is
+    therefore a legitimate upload that still has to be converted.
+    """
+    return _synthesise(
+        tmp_path / "reference-44k.flac",
+        sample_rate=44100,
+        channels=2,
+        duration=3,
+        codec="flac",
+    )
+
+
+@pytest.fixture
 def low_rate_mono_wav(tmp_path):
     """A 22.05 kHz mono WAV -- too coarse for the fingerprint profile."""
     return _synthesise(

@@ -253,7 +253,12 @@ def already_conforms(
         return False
 
     if profile.lossless:
-        if info.codec not in {"pcm_s16le", "pcm_s24le", "pcm_s32le", "flac"}:
+        # The guard answers "would the service have produced this file?",
+        # so it compares against the profile's own codec rather than every
+        # lossless codec. The service always writes the profile's codec, so
+        # a 24-bit or FLAC file is an *input* to be converted, not a
+        # finished output to be left alone.
+        if info.codec != profile.codec:
             return False
     elif info.codec != "mp3":
         return False

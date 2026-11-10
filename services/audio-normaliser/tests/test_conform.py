@@ -53,6 +53,18 @@ def test_a_coarse_sample_rate_does_not_conform():
     assert not already_conforms(_info(sample_rate=22050), FINGERPRINT)
 
 
+def test_a_lossless_codec_other_than_the_profiles_own_does_not_conform():
+    """A lossless file is not the same thing as a *finished* file.
+
+    The fingerprint profile writes 16-bit PCM. A 24-bit WAV or a FLAC at
+    the right rate is a legitimate upload that still needs converting, so
+    the guard must not mistake it for the service's own output.
+    """
+    assert not already_conforms(_info(codec="pcm_s24le"), FINGERPRINT)
+    assert not already_conforms(_info(codec="pcm_s32le"), FINGERPRINT)
+    assert not already_conforms(_info(codec="flac"), FINGERPRINT)
+
+
 # --- The AD-track profile: the measurement is part of the decision -------------
 
 

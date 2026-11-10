@@ -279,3 +279,24 @@ def test_an_unreadable_object_is_not_spared_the_error(loud_mp3):
         normalise_object("uploads", key, client, routes=routes)
 
     assert client.uploads == []
+
+
+@requires_ffmpeg
+def test_a_lossless_upload_at_the_right_rate_is_still_processed(right_rate_flac):
+    """A FLAC at 44.1 kHz is an upload, not a finished file.
+
+    The documentation accepts FLAC as reference audio, and the fingerprint
+    profile delivers 16-bit PCM WAV. The guard must recognise only the
+    service's own output as finished, or a legitimate upload is silently
+    dropped and never reaches the destination bucket.
+    """
+    key = "audio-tracks-to-process/reference.flac"
+    client = FakeS3Client({("uploads", key): right_rate_flac.read_bytes()})
+    routes = load_routes(json.dumps({"audio-tracks-to-process/": "fingerprint"}))
+
+    report = normalise_object("uploads", key, client, routes=routes)
+
+    assert report is not None, "the upload was skipped instead of converted"
+
+    uploaded_keys = [(bucket, key) for bucket, key, *_ in client.uploads]
+    assert uploaded_keys == [("uploads", "audio-tracks-to-process/reference.wav")]
