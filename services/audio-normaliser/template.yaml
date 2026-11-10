@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  DescribeAT audio normaliser. Converts uploaded audio into the format the
+  fingerprinting engine and the listener app expect, so that operators can
+  upload whatever they have and get the right result.
+
+# Deploy with:
+#   sam build
+#   sam deploy --guided
+#
+# See README.md for the full walkthrough.
+
+Parameters:
+  SourceBucketName:
+    Type: String
+    Description: >
+      The bucket that receives admin uploads. The normaliser is triggered by
+      object-created events on this bucket.
+  DestinationBucketName:
+    Type: String
+    Default: ''
+    Description: >
+      Where to write normalised files. Leave empty to write back to the
+      source bucket.
+  RouteRules:
+    Type: String
+    Default: '{"audio-tracks-to-process/": "fingerprint", "audio-description-tracks-to-process/": "ad-track"}'
+    Description: >
+      JSON object mapping source key prefixes to profile names. Objects whose
+      key matches no prefix are left untouched.
+  LogLevel:
+    Type: String
+    Default: INFO
+    AllowedValues: [DEBUG, INFO, WARNING, ERROR]
+  LogRetentionDays:
+    Type: Number
+    Default: 30
+    Description: How long to keep the function's logs.
+
+Globals:
+  Function:
+    Timeout: 900
+    MemorySize: 2048
+    Architectures: [x86_64]
+    LoggingConfig:
+      LogFormat: JSON
+
+Resources:
+  NormaliserFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      # ffmpeg is provided by a Lambda layer, so the function package itself
+      # stays small and the deployment is fast.
+      BuildMethod: makefile
+    Properties:
+      Handler: describeat_audio.lambda_handler.lambda_handler
+      Runtime: python3.12
+      CodeUri: ./
+      Layers:
+        - !Ref FfmpegLayer
+      Environment:
+        Variables:
+          DESCRIBEAT_AUDIO_DESTINATION_BUCKET: !Ref DestinationBucketName
+          DESCRIBEAT_AUDIO_ROUTES: !Ref RouteRules
+          LOG_LEVEL: !Ref LogLevel
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref SourceBucketName
+        - S3WritePolicy:
+            BucketName: !Ref DestinationBucketName
+      Events:
+        SourceUpload:
+          Type: S3
+          Properties:
+            Bucket: !Ref SourceBucketName
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: audio-
+
+  # The ffmpeg Lambda layer. The layer is published by the AWS serverless
+  # applications catalogue; swap the ARN for your own build if you prefer.
+  FfmpegLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: describeat-ffmpeg
+      Description: ffmpeg and ffprobe for the DescribeAT audio normaliser.
+      CompatibleRuntimes:
+        - python3.12
+      ContentUri: ./layer/
+    # For a published layer, replace the resource above with:
+    #   Type: AWS::Lambda::LayerVersion
+    #   Properties:
+    #     Content:
+    #       S3Bucket: <your-bucket>
+    #       S3Key: <your-key>
+    #     LayerName: describeat-ffmpeg
+
+  NormaliserFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${NormaliserFunction}'
+      RetentionInDays: !Ref LogRetentionDays
+
+Outputs:
+  FunctionName:
+    Description: The name of the normaliser function.
+    Value: !Ref NormaliserFunction
+  FunctionArn:
+    Description: The ARN of the normaliser function.
+    Value: !GetAtt NormaliserFunction.Arn
+  RoleArn:
+    Description: >
+      The execution role. Add an S3 event notification on the source bucket
+      pointing at this function to activate the pipeline.
+    Value: !GetAtt NormaliserFunctionRole.Arn

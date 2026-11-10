@@ -42,10 +42,13 @@ describeat-backend-ecosystem/
 │   ├── 07-deploy-your-own.md       ← step-by-step: spin up your own instance
 │   ├── 08-cost-estimates.md        ← what to budget for a small self-hosted deployment
 │   ├── 09-orphaned-resources.md    ← how to keep your account tidy
-│   ├── 10-adrs.md                  ← architecture decision records
-│   └── 11-troubleshooting-faq.md   ← 22 issues + 22 FAQ items (Symptom → Cause → Diagnostic → Fix)
+│   ├── 10-adrs.md                    ← architecture decision records
+│   └── 11-troubleshooting-faq.md     ← 22 issues + 22 FAQ items (Symptom → Cause → Diagnostic → Fix)
 │
-├── diagrams/                       ← SVG architecture diagrams
+├── services/                         ← runnable backend services
+│   └── audio-normaliser/            ← converts uploads into the format the backend expects
+│
+├── diagrams/                         ← SVG architecture diagrams
 │   ├── 01-overview.svg
 │   └── 04-t2s-flow.svg
 │
@@ -110,6 +113,8 @@ If you deploy a modified DescribeAT backend as a service accessible to the publi
 - **Not a deployed service.** You cannot "use" this repository — you read it, follow the patterns, and deploy your own.
 - **Not the AD content library.** AD tracks are Shakila/Sibonga's curated catalogue, licensed separately, and not redistributed from this repo.
 - **Not a promise of feature parity.** The original Shazacin instance had proprietary integrations (FCM, custom fingerprinting, paid content licensing) that are documented for context but may not be reproducible by self-hosters.
+
+Some runnable reference implementations live in [`services/`](services/). They are complete, tested and deployable, and they exist so that a self-hoster does not have to write the glue code the original deployment contained.
 
 ---
 

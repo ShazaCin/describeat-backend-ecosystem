@@ -1,0 +1,8 @@
+# Virtualenv created by `uv venv .venv` during local development.
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
