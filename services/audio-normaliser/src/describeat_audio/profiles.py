@@ -78,7 +78,9 @@ class AudioProfile:
             processing, which is the correct default for reference audio.
         true_peak_dbtp: True-peak ceiling, only meaningful with loudness
             processing enabled.
-        loudness_range_lu: Maximum loudness range to preserve.
+        loudness_range_lu: Maximum loudness range the profile documents. Used
+            only as a soft observation in the report: a static gain never
+            compresses dynamics, so this ceiling is documented, not enforced.
         lossless: Whether the encode preserves the source samples exactly.
         bitexact: Whether to strip metadata and timestamps for reproducibility.
         container_args: Extra muxing arguments.

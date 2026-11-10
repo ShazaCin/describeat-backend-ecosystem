@@ -123,6 +123,51 @@ def quiet_mp3(tmp_path):
 
 
 @pytest.fixture
+def digital_silence_wav(tmp_path):
+    """A file whose samples are all zero, for the truly unmeasurable case.
+
+    A very quiet signal (the ``silent_mp3`` fixture) still measures as a
+    very low loudness. Genuine digital silence is what makes loudnorm
+    report ``-inf``, which is the case the normaliser has to refuse in
+    plain words.
+    """
+    path = tmp_path / "silence.wav"
+    args = [
+        ffmpeg_path(),
+        "-hide_banner",
+        "-loglevel", "error",
+        "-y",
+        "-f", "lavfi",
+        "-i", "anullsrc=r=44100:cl=mono",
+        "-t", "2",
+        "-c:a", "pcm_s16le",
+        str(path),
+    ]
+    result = subprocess.run(args, capture_output=True, text=True, check=False)
+    if result.returncode != 0:
+        raise RuntimeError(f"Could not synthesise {path}: {result.stderr.strip()}")
+    return path
+
+
+@pytest.fixture
+def mono_quiet_mp3(tmp_path):
+    """A mono 44.1 kHz MP3 that is far below the -16 LUFS target.
+
+    Structurally it already looks like the AD-track profile's output; only
+    the measured loudness disqualifies it. That is the file on which the
+    guard's decision must rest on the measurement, not on the format.
+    """
+    return _synthesise(
+        tmp_path / "mono-quiet.mp3",
+        sample_rate=44100,
+        channels=1,
+        duration=3,
+        codec="libmp3lame",
+        gain_db=-24,
+    )
+
+
+@pytest.fixture
 def silent_mp3(tmp_path):
     """A silent MP3, for testing the edge case of unmeasurable loudness."""
     return _synthesise(
