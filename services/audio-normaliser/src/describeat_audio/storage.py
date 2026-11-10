@@ -23,8 +23,9 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Sequence
 
 from .errors import DescribeAtAudioError
-from .normalise import NormalisationReport, normalise
+from .normalise import NormalisationReport, already_conforms, normalise
 from .profiles import AudioProfile, load_profile
+from .probe import measure_loudness, probe
 
 #: Environment variable naming the S3 bucket that receives normalised files.
 DESTINATION_BUCKET_ENV = "DESCRIBEAT_AUDIO_DESTINATION_BUCKET"
@@ -130,6 +131,40 @@ def destination_key(key: str, profile: AudioProfile) -> str:
     return f"{stem}.{profile.extension}"
 
 
+def _already_normalised(source_path: Path, profile: AudioProfile) -> bool:
+    """Whether a downloaded file already meets its route's profile.
+
+    This is the write-back guard. When the normaliser writes its result back
+    into the bucket it read from -- the default -- that write is itself an
+    upload, arrives as a new event, and matches the same route the upload
+    did. Without the guard, each pass would re-run ffmpeg and upload again,
+    self-feeding: lossless-to-lossless as a no-op, or worse on the lossy
+    profile, a re-encode that loses a generation each round trip.
+
+    A file is "already normalised" when it conforms to the profile: codec,
+    sample rate and channel count from the probe, and -- only for the
+    loudness profile -- a measured loudness already within tolerance. The
+    loudness pass costs one read of the file, but it is what lets the guard
+    skip with confidence instead of guessing from extensions.
+
+    A file that cannot even be probed is *not* treated as already
+    normalised: the conversion is left to run and raise its proper error.
+    """
+    try:
+        info = probe(source_path)
+    except DescribeAtAudioError:
+        return False
+
+    loudness = None
+    if profile.loudness_lufs is not None:
+        try:
+            loudness = measure_loudness(source_path)
+        except DescribeAtAudioError:
+            return False
+
+    return already_conforms(info, profile, loudness)
+
+
 def normalise_object(
     bucket: str,
     key: str,
@@ -151,8 +186,9 @@ def normalise_object(
             It receives ``(bucket, key, destination_path)``.
 
     Returns:
-        The report for the conversion, or ``None`` when no route matched the
-        key and so nothing was done.
+        The report for the conversion, or ``None`` when nothing was done:
+        either no route matched the key, or the object already conforms to
+        its profile (the write-back guard -- see :func:`_already_normalised`).
     """
     routes = list(routes) if routes is not None else load_routes()
 
@@ -172,6 +208,13 @@ def normalise_object(
             downloader(bucket, key, source_path)
         else:
             s3_client.download_file(bucket, key, str(source_path))
+
+        # The write-back guard: an object that already conforms to its
+        # profile is the output of an earlier run. Processing it again would
+        # be a no-op or a generation-losing re-encode that fires the bucket
+        # notification once more, so report "nothing to do" instead.
+        if _already_normalised(source_path, profile):
+            return None
 
         report = normalise(source_path, target_path, profile)
 

@@ -20,9 +20,13 @@ Parameters:
   DestinationBucketName:
     Type: String
     Default: ''
-    Description: >
+    Description: >-
       Where to write normalised files. Leave empty to write back to the
-      source bucket.
+      source bucket. A separate destination bucket is recommended: the
+      write-back is safe -- the normaliser recognises its own output and
+      leaves already-converted files alone -- but keeping the results out
+      of the upload area makes the source bucket a pure drop-box, and
+      sidesteps the bucket-notification churn entirely.
   RouteRules:
     Type: String
     Default: '{"audio-tracks-to-process/": "fingerprint", "audio-description-tracks-to-process/": "ad-track"}'
@@ -113,7 +117,8 @@ Outputs:
     Description: The ARN of the normaliser function.
     Value: !GetAtt NormaliserFunction.Arn
   RoleArn:
-    Description: >
-      The execution role. Add an S3 event notification on the source bucket
-      pointing at this function to activate the pipeline.
+    Description: >-
+      The execution role. Nothing else is needed on the bucket: the template
+      wires the S3 event notification itself, through the function's
+      SourceUpload event above.
     Value: !GetAtt NormaliserFunctionRole.Arn

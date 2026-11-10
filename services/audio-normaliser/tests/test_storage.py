@@ -225,3 +225,78 @@ def test_handle_s3_event_raises_when_an_object_fails():
 
 def test_handle_s3_event_ignores_an_empty_event():
     assert handle_s3_event({}, s3_client=FakeS3Client()) == []
+
+
+# --- The write-back guard ------------------------------------------------------
+
+
+@requires_ffmpeg
+def test_the_ad_track_write_back_is_left_alone(loud_mp3):
+    """The output of a conversion, arriving again as an event, is not redone.
+
+    This is the guard against the self-feeding loop: without it, every
+    write-back would trigger a fresh conversion and a fresh upload.
+    """
+    key = "audio-description-tracks-to-process/t.mp3"
+    client = FakeS3Client({("uploads", key): loud_mp3.read_bytes()})
+    routes = load_routes(json.dumps({"audio-description-tracks-to-process/": "ad-track"}))
+
+    first = normalise_object("uploads", key, client, routes=routes)
+    assert first is not None
+    uploads_after_first = list(client.uploads)
+
+    second = normalise_object("uploads", key, client, routes=routes)
+    assert second is None
+    assert client.uploads == uploads_after_first
+
+
+@requires_ffmpeg
+def test_the_fingerprint_write_back_is_left_alone(stereo_flac):
+    key = "audio-tracks-to-process/t.flac"
+    written_key = "audio-tracks-to-process/t.wav"
+    client = FakeS3Client({("uploads", key): stereo_flac.read_bytes()})
+    routes = load_routes(json.dumps({"audio-tracks-to-process/": "fingerprint"}))
+
+    first = normalise_object("uploads", key, client, routes=routes)
+    assert first is not None
+    uploads_after_first = list(client.uploads)
+
+    # The normalised copy was uploaded into the same key space the event
+    # filter watches. Converting it again would be a pointless no-op.
+    second = normalise_object("uploads", written_key, client, routes=routes)
+    assert second is None
+    assert client.uploads == uploads_after_first
+
+
+@requires_ffmpeg
+def test_an_unreadable_object_is_not_spared_the_error(loud_mp3):
+    """A file that cannot be probed must still fail loudly, not be skipped."""
+    key = "audio-description-tracks-to-process/broken.mp3"
+    client = FakeS3Client({("uploads", key): b"this is not audio"})
+    routes = load_routes(json.dumps({"audio-description-tracks-to-process/": "ad-track"}))
+
+    with pytest.raises(DescribeAtAudioError):
+        normalise_object("uploads", key, client, routes=routes)
+
+    assert client.uploads == []
+
+
+@requires_ffmpeg
+def test_a_lossless_upload_at_the_right_rate_is_still_processed(right_rate_flac):
+    """A FLAC at 44.1 kHz is an upload, not a finished file.
+
+    The documentation accepts FLAC as reference audio, and the fingerprint
+    profile delivers 16-bit PCM WAV. The guard must recognise only the
+    service's own output as finished, or a legitimate upload is silently
+    dropped and never reaches the destination bucket.
+    """
+    key = "audio-tracks-to-process/reference.flac"
+    client = FakeS3Client({("uploads", key): right_rate_flac.read_bytes()})
+    routes = load_routes(json.dumps({"audio-tracks-to-process/": "fingerprint"}))
+
+    report = normalise_object("uploads", key, client, routes=routes)
+
+    assert report is not None, "the upload was skipped instead of converted"
+
+    uploaded_keys = [(bucket, key) for bucket, key, *_ in client.uploads]
+    assert uploaded_keys == [("uploads", "audio-tracks-to-process/reference.wav")]

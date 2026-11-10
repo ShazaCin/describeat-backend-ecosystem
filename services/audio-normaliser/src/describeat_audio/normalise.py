@@ -30,6 +30,7 @@ The conversion runs in one or two stages, depending on the profile:
 
 from __future__ import annotations
 
+import math
 import os
 import tempfile
 from dataclasses import dataclass
@@ -174,6 +175,20 @@ def _check_conformance(
                 f"{profile.loudness_lufs:.2f} LUFS."
             )
 
+    # A profile may document a loudness-range ceiling. A single static gain
+    # never compresses dynamics, so this cannot be forced -- it is a soft
+    # observation for the operator, not a failure.
+    if profile.loudness_range_lu is not None and output_loudness is not None:
+        if output_loudness.loudness_range_lu > profile.loudness_range_lu:
+            warnings.append(
+                f"The output's loudness range is "
+                f"{output_loudness.loudness_range_lu:.1f} LU, above the "
+                f"{profile.loudness_range_lu:.0f} LU ceiling the "
+                f"{profile.name!r} profile documents. The static gain does "
+                f"not compress dynamics, so a very dynamic source keeps "
+                f"its range."
+            )
+
     # Soft observations. These are not failures, but an operator should know.
     if profile.lossless and not source.is_lossless:
         warnings.append(
@@ -210,6 +225,53 @@ def _check_conformance(
         )
 
     return warnings
+
+
+def already_conforms(
+    info: AudioInfo,
+    profile: AudioProfile,
+    loudness: LoudnessInfo | None = None,
+) -> bool:
+    """Whether a probed file already meets a profile's targets.
+
+    The structural checks (codec, sample rate, channel count) come from the
+    probe alone. A profile with a loudness target additionally needs
+    ``loudness`` measured on the same file: when it is not supplied, an
+    otherwise-matching file is reported as *not* conforming, so a caller
+    never skips a file it has not measured.
+
+    This is the check behind the write-back guard in the storage adapter:
+    the output of an earlier conversion, arriving again as a new event,
+    already conforms, and re-processing it would either be a no-op or --
+    for the lossy profile -- a generation-losing re-encode that fires the
+    bucket notification again.
+    """
+    if info.sample_rate != profile.sample_rate:
+        return False
+
+    if profile.channels is not None and info.channels != profile.channels:
+        return False
+
+    if profile.lossless:
+        # The guard answers "would the service have produced this file?",
+        # so it compares against the profile's own codec rather than every
+        # lossless codec. The service always writes the profile's codec, so
+        # a 24-bit or FLAC file is an *input* to be converted, not a
+        # finished output to be left alone.
+        if info.codec != profile.codec:
+            return False
+    elif info.codec != "mp3":
+        return False
+
+    if profile.loudness_lufs is not None:
+        if loudness is None:
+            return False
+        if math.isinf(loudness.integrated_lufs):
+            return False
+        if abs(loudness.integrated_lufs - profile.loudness_lufs) > LOUDNESS_TOLERANCE_LU:
+            return False
+
+    return True
 
 
 def normalise(
@@ -303,6 +365,17 @@ def normalise(
                 # gain has to be calculated for.
                 intermediate_loudness = measure_loudness(intermediate_path)
                 source_loudness = intermediate_loudness
+
+                if math.isinf(intermediate_loudness.integrated_lufs):
+                    # The loudnorm filter reports -inf for material with no
+                    # measurable sound. The computed "correction" would be
+                    # an infinite gain, so stop here with a plain message
+                    # instead of letting the encoder fail cryptically. Nothing
+                    # has been written and the destination is untouched.
+                    raise NormalisationError(
+                        "This file has no measurable sound -- it is silent, so "
+                        "it cannot be loudness-normalised. Nothing was written."
+                    )
 
                 gain_applied_db = (
                     profile.loudness_lufs - intermediate_loudness.integrated_lufs

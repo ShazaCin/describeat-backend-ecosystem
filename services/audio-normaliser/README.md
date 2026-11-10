@@ -100,7 +100,7 @@ sam build
 sam deploy --guided
 ```
 
-Then add an S3 event notification on your upload bucket pointing at the deployed function.
+`sam build` and `sam deploy --guided` wire the S3 event notification themselves — nothing needs to be added on the bucket by hand.
 
 **Routing** is by key prefix, configured with the `DESCRIBEAT_AUDIO_ROUTES` environment variable:
 
@@ -113,12 +113,16 @@ Then add an S3 event notification on your upload bucket pointing at the deployed
 
 Objects whose key matches no prefix are left untouched, so the same bucket can hold posters and other files without them being mangled.
 
+**The write-back guard.** The normalised result is written into the same key space the trigger watches, so the finished file arrives as a new event. The service recognises its own output — when an incoming object already meets its profile (codec, sample rate, channels, and measured loudness for the AD track) it is left untouched. A genuinely silent upload is refused with a plain message rather than normalised with an impossible gain.
+
+Setting `DESCRIBEAT_AUDIO_DESTINATION_BUCKET` to a separate bucket is still the recommended setup: it keeps the upload bucket a pure drop-box and avoids the extra event round-trip entirely.
+
 **Environment variables:**
 
 | Variable | Purpose | Default |
 |---|---|---|
 | `DESCRIBEAT_AUDIO_ROUTES` | JSON mapping of key prefixes to profile names | The two routes above |
-| `DESCRIBEAT_AUDIO_DESTINATION_BUCKET` | Where to write normalised files | The source bucket |
+| `DESCRIBEAT_AUDIO_DESTINATION_BUCKET` | Where to write normalised files | The source bucket (a separate bucket is recommended) |
 | `LOG_LEVEL` | Logging verbosity | `INFO` |
 
 The function needs `s3:GetObject` on the source bucket and `s3:PutObject` on the destination bucket.
