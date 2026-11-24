@@ -60,6 +60,7 @@ Import these into your local data layer after deploying. The exact mechanism dep
 ### 2. Validate your data layer's resolvers
 
 Run a test suite that:
+
 - Loads each sample
 - Queries the data layer for the same item
 - Verifies the returned item matches the sample (modulo fields the schema doesn't expose)
@@ -69,6 +70,7 @@ This catches bugs where the resolver misnames a field, gets the type wrong, or m
 ### 3. Test your admin portal UI
 
 Render the admin portal with the sample data. Verify:
+
 - The titles page shows the titles
 - The categories page shows the categories
 - The feedback page shows the feedback

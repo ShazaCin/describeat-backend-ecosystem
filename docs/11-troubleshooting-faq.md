@@ -26,6 +26,7 @@ This document complements the deployment guide ([`07-deploy-your-own.md`](07-dep
 **Cause:** The pool was created in a different region than your CLI is pointing at. The reference deployment's app pool (`eu-west-1_gdo3NUHbn`) lives in `eu-west-1`; if you copied `aws-exports.ts` verbatim and your CLI default is `us-east-1`, you'll get this error.
 
 **Diagnostic:**
+
 ```bash
 aws cognito-idp describe-user-pool --user-pool-id eu-west-1_gdo3NUHbn --region eu-west-1
 aws configure get region  # what your CLI defaults to
@@ -44,6 +45,7 @@ aws configure get region  # what your CLI defaults to
 **Cause:** The reference deployment uses **API key auth as the default mode** on the SAM App AppSync API (`75tdkx...`). The API key is committed to `aws-exports.ts:18`. When you deploy your own AppSync, a new API key is generated — but the committed `aws-exports.ts` still carries the old (now-invalid) key.
 
 **Diagnostic:**
+
 ```bash
 # List API keys for your AppSync API
 aws appsync list-api-keys --api-id YOUR_API_ID --region eu-west-1
@@ -66,12 +68,14 @@ grep -n "aws_appsync_apiKey" describeat-app-frontend-26/aws-exports.ts
 **Cause:** The reference bucket's CORS config only allows specific origins: `app.shazacin.com`, `cxrt3b.shazacin.com`, `admin.shazacin.com`, `describeat.web.app`, `describeat.firebaseapp.com`, `localhost`, `localhost:8080`, `localhost:5173`, `shazacin.com`. If your dev server runs on port 5174 (Vite's fallback when 5173 is taken), it's blocked.
 
 **Diagnostic:**
+
 ```bash
 aws s3api get-bucket-cors --bucket shazacin-static-content --region eu-west-1
 # Check whether your dev origin appears in AllowedOrigins
 ```
 
 **Fix:** Add your origin to the bucket's CORS configuration:
+
 ```bash
 cat > /tmp/cors.json <<'EOF'
 {
@@ -107,6 +111,7 @@ aws s3api put-bucket-cors --bucket shazacin-static-content --cors-configuration 
 **Cause:** The Lambda's execution role doesn't have `dynamodb:PutItem` / `UpdateItem` on the target table ARN. The reference deployment's IAM roles are scoped to specific table ARNs — if you recreated the tables with new names, the policies still point at the old ARNs.
 
 **Diagnostic:**
+
 ```bash
 # Get the Lambda's role and its policies
 aws lambda get-function-configuration --function-name combined_lambda --region eu-west-1 --query 'Role' --output text
@@ -131,6 +136,7 @@ aws iam list-attached-role-policies --role-name "$ROLE_NAME"
 **Cause:** CloudFront deployments normally take 5–15 minutes. If it's stuck past 30 minutes, the most common cause is an **ACM certificate in the wrong region**. CloudFront requires certificates to be in `us-east-1` — no other region works, even if your distribution's origins are in `eu-west-1`.
 
 **Diagnostic:**
+
 ```bash
 # The reference deployment keeps all ACM certs in us-east-1 — confirm yours is too
 aws acm list-certificates --region us-east-1 --output table
@@ -150,6 +156,7 @@ aws acm list-certificates --region eu-west-1 --output table  # should NOT includ
 **Cause:** The reference deployment was created almost entirely via `amplify push` (the Amplify CLI). The only piece of CDK in the entire backend is `NotificationsApiStack.ts` — a 56-line stack that provisions the API Gateway + fcmTokensAPI Lambda for push token registration.
 
 **Diagnostic:** Search the repo:
+
 ```bash
 find . -name "amplify-meta.json" -o -name "*.stack.ts" -o -name "cdk.json"
 ```
@@ -176,6 +183,7 @@ find . -name "amplify-meta.json" -o -name "*.stack.ts" -o -name "cdk.json"
 **Cause:** The ACM certificate for your custom domain is in `Pending validation` status — you haven't completed DNS validation.
 
 **Diagnostic:**
+
 ```bash
 aws acm describe-certificate --certificate-arn arn:aws:acm:us-east-1:ACCOUNT:certificate/CERT_ID --region us-east-1 --query 'Certificate.DomainValidationOptions[].{Domain:DomainName,ValidationDomain:ValidationDomain,Status:ValidationStatus,CNAME:ResourceRecord.Name,Value:ResourceRecord.Value}' --output table
 ```
@@ -219,6 +227,7 @@ aws cognito-idp create-user-pool-domain --domain auth.your-domain-prefix --user-
 4. You're in a different region than the instance was created in (eu-west-1 in the reference deployment).
 
 **Diagnostic:**
+
 ```bash
 aws ec2 describe-instances --instance-ids i-04821c5781bfa4471 --region eu-west-1 \
   --query 'Reservations[0].Instances[0].{State:State.Name,AMI:ImageId,IamProfile:IamInstanceProfile,RootDevice:RootDeviceName,Volumes:BlockDeviceMappings}' \
@@ -229,6 +238,7 @@ aws ec2 describe-images --image-ids ami-08a2aed6e0a6f9c7d --region eu-west-1
 ```
 
 **Fix:**
+
 - If the AMI is missing: rebuild from the source repo or a backup AMI.
 - If the volume is detached: `aws ec2 attach-volume --instance-id i-04821c5781bfa4471 --volume-id vol-xxx --device /dev/xvda`.
 - If there's no IAM profile: the reference deployment deliberately omits one. This is a known limitation — without an instance profile, the EC2 can't invoke Lambda, can't access S3 via IAM (it has to use hardcoded credentials instead), and can't use SSM. See FAQ Q12 for the full implications.
@@ -252,6 +262,7 @@ S3 PutObject → EventBridge rule "t2s-fingerprinterV2-audiofileupload-rule"
 But the `t2s-fingerprinter` **ECS cluster is a stub** — no task definition, 0 running tasks. The `UpdateService` call is a **no-op**. Meanwhile, the lambda that was supposed to actually start the EC2 fingerprinter (`t2s-instance-manager-prod-t2sInstanceManager`) has **no wired trigger** — no EventBridge rule targets it, no CloudWatch alarm invokes it, no schedule runs it.
 
 **Diagnostic:**
+
 ```bash
 # Confirm the EventBridge rule exists and is enabled
 aws events list-rules --region eu-west-1 --name-prefix t2s-fingerprinterV2
@@ -269,6 +280,7 @@ aws events list-rule-names-by-target --target-arn arn:aws:lambda:eu-west-1:40065
 **Fix (pick one):**
 
 **Option A — manual (the current reference workflow):**
+
 ```bash
 aws ec2 start-instances --instance-ids i-04821c5781bfa4471 --region eu-west-1
 # SSH in (you'll need the key pair — SSM won't work, no instance profile)
@@ -279,6 +291,7 @@ aws ec2 stop-instances --instance-ids i-04821c5781bfa4471 --region eu-west-1
 
 **Option B — wire up the intended auto-trigger (recommended for fresh deployments):**
 Create an EventBridge rule that invokes `t2s-instance-manager-prod-t2sInstanceManager` on the same S3 PutObject pattern:
+
 ```bash
 # Use the same event pattern as the existing (broken) rule
 aws events put-rule --name t2s-instance-manager-trigger \
@@ -310,6 +323,7 @@ aws events put-targets --rule t2s-instance-manager-trigger \
 **Cause:** The T2S checker listens on **port 8001**. If your health check path is wrong (`/health` instead of `/`, for example) or the port is wrong (the reference ALB is `t2s-c-LoadB-WKQV4N4D6SE8-f1789f87fcb317c5.elb.eu-west-1.amazonaws.com:8001`), the ALB sees the task as unhealthy.
 
 **Diagnostic:**
+
 ```bash
 # Describe the target group's health check config
 aws elbv2 describe-target-groups --region eu-west-1 --query 'TargetGroups[?contains(TargetGroupArn, `t2s-checker`)].{Protocol:Protocol,Port:Port,Path:HealthCheckPath,Interval:HealthCheckIntervalSeconds,Timeout:HealthCheckTimeoutSeconds,Threshold:HealthyThresholdCount}' --output table
@@ -331,6 +345,7 @@ aws elbv2 describe-target-health --target-group-arn TARGET_GROUP_ARN --region eu
 **Cause:** The Dejavu hash database is missing or empty. In the reference deployment, the **checker bakes the hash DB into the container image itself** (885MB image, last pushed 2022-03). If you build a fresh image without the DB, or the DB file is corrupt, you get this symptom.
 
 **Diagnostic (inside the container):**
+
 ```bash
 # Exec into a running checker task
 aws ecs execute-command --cluster t2s-checker --task TASK_ID --container t2s-checker --interactive --command "/bin/bash" --region eu-west-1
@@ -340,6 +355,7 @@ python -c "from dejavu import Dejavu; djv = Dejavu({'database': {'host': 'localh
 ```
 
 **Fix:** Either:
+
 1. Re-build the container image with a known-good hash DB in `/app/fingerprints/`.
 2. Point the matcher at a separate hash DB service (Redis or Postgres) and load it from a snapshot. See [`04-t2s-sync-engine.md` §"Hash database"](04-t2s-sync-engine.md) for the schema.
 
@@ -354,6 +370,7 @@ python -c "from dejavu import Dejavu; djv = Dejavu({'database': {'host': 'localh
 **Cause:** The transcoder uses bundled `/opt/ffmpeg/ffmpeg` (Lambda layer) and runs in 2048MB memory with a 360s timeout. Large files exceed this.
 
 **Fix:** Three options, in increasing complexity:
+
 1. **Pre-split large files** before upload (most pragmatic).
 2. **Bump the timeout to 900s** (Lambda max) — but at 2048MB memory, this costs more.
 3. **Migrate transcoding to ECS Fargate** — trigger a Fargate task via S3 → EventBridge → Lambda, run ffmpeg on a 4 vCPU/8GB task that processes the file and writes to `shazacin-static-content`. This is the right answer for production.
@@ -369,6 +386,7 @@ python -c "from dejavu import Dejavu; djv = Dejavu({'database': {'host': 'localh
 **Cause:** The `/register` endpoint is protected by a **Cognito user pool authorizer**. The request must include a valid `Authorization: Bearer <JWT>` header. If the JWT is expired, missing, or from the wrong user pool, you get 403.
 
 **Diagnostic:**
+
 ```bash
 # Test the endpoint with a known-good JWT (extract from the PWA's auth state)
 curl -X POST https://5iub6lxbcf.execute-api.eu-west-1.amazonaws.com/prod/register \
@@ -389,6 +407,7 @@ curl -X POST https://5iub6lxbcf.execute-api.eu-west-1.amazonaws.com/prod/registe
 **Cause:** The service worker file (`sw.js` or `sw.ts`) is served with the wrong MIME type or is missing the `type: 'module'` flag. The reference deployment's `src/sw.ts` uses `importScripts()` to load the Firebase compat SDK — this requires the worker to be a classic worker, not a module worker.
 
 **Diagnostic:**
+
 ```js
 // In the browser console:
 navigator.serviceWorker.getRegistrations().then(r => console.log(r));
@@ -414,12 +433,14 @@ navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(r => console.log
 3. **The Firebase Messaging SDK must be loaded in the service worker context, not the main thread.** If the SW only does `postMessage` to the main thread which then calls FCM, iOS doesn't get the token.
 
 **Diagnostic:** On an iOS device (not simulator — simulators can't test push):
+
 1. Check iOS version: Settings → General → About → Software Version. Must be ≥ 16.4.
 2. Check the PWA is installed to home screen (Safari → Share → Add to Home Screen).
 3. Open the PWA from the home screen icon, not Safari.
 4. In the PWA, open the Web Inspector (Safari → Develop → [device] → [PWA]). Look for SW errors in the console.
 
 **Fix:**
+
 - Add an iOS version check to your onboarding flow and surface a "Push notifications require iOS 16.4+" message to users on older versions.
 - Ensure the SW calls `firebase.messaging()` directly, not via `postMessage` to the main thread.
 - Always `await navigator.serviceWorker.ready` before requesting a token — the SW must be active first.
@@ -435,6 +456,7 @@ navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(r => console.log
 **Cause:** The `FIREBASE_PRIVATE_KEY` environment variable has lost its newlines. When you paste a Firebase service account JSON's `private_key` into an AWS Lambda env var via the Console, the Console strips newlines. The key is multi-line PEM — newlines are required.
 
 **Fix:** Set the env var with explicit newlines. Either:
+
 1. Use `aws lambda update-function-configuration --environment "Variables={FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n}"` (the `\n` are literal escape sequences).
 2. Or store the key in AWS Secrets Manager and load it at cold start, avoiding env var entirely. (This is the recommended approach.)
 
@@ -457,17 +479,20 @@ DOMAINWHITELIST=shazacin.com, ghi.ngo
 If your organisation's domain isn't in that list, signup is blocked.
 
 **Diagnostic:**
+
 ```bash
 aws lambda get-function-configuration --function-name shazacinadminportal1c4973ffPreSignup-dev --region eu-west-1 --query 'Environment.Variables' --output table
 ```
 
 **Fix:** Update the env var with your domains:
+
 ```bash
 aws lambda update-function-configuration --function-name shazacinadminportal1c4973ffPreSignup-dev --region eu-west-1 \
   --environment 'Variables={DOMAINBLACKLIST=,DOMAINWHITELIST=your-org.com,partners.org,ENV=dev,MODULES=email-filter-whitelist,REGION=eu-west-1}'
 ```
 
 **The PreSignUp logic** (from the reference deployment's `email-filter-whitelist.js`):
+
 ```javascript
 exports.handler = (event, context, callback) => {
   const wld = process.env.DOMAINWHITELIST.split(',').map(d => d.trim());
@@ -492,6 +517,7 @@ exports.handler = (event, context, callback) => {
 **Cause:** The CustomMessage Lambda (`shazacinadminportal1c4973ffCustomMessage-dev`) has `REDIRECTURL=http://localhost:8080/oauth2/idpresponse` baked into its env vars. This is a dev-only setting.
 
 **Fix:** Update the env var:
+
 ```bash
 aws lambda update-function-configuration --function-name shazacinadminportal1c4973ffCustomMessage-dev --region eu-west-1 \
   --environment 'Variables={EMAILMESSAGE=Please confirm your email address for the DescribeAT Administration Portal,EMAILSUBJECT=NO-REPLY | Confirm your email — DescribeAT Admin,REDIRECTURL=https://admin.your-domain/oauth2/idpresponse,RESOURCENAME=shazacinadminportal1c4973ffCustomMessage}'
@@ -508,6 +534,7 @@ aws lambda update-function-configuration --function-name shazacinadminportal1c49
 **Cause:** AppSync's resolver for the mutation isn't wired up. The reference deployment's admin AppSync API (`4btq2hqzbrbqbczbqtmufmauha`) has resolvers for each type, but if you recreated the API from `schema.graphql` without running `amplify push` (which auto-generates resolvers), the resolvers are missing.
 
 **Diagnostic:**
+
 ```bash
 # List resolvers for the admin API
 aws appsync list-resolvers --api-id 4btq2hqzbrbqbczbqtmufmauha --type-name ShazacinMetadataTitles --region eu-west-1
@@ -527,6 +554,7 @@ If you're not using Amplify, you must manually create resolvers using your Dynam
 **Cause:** The `listAdminUsers` resolver is a Lambda (`shazacin-admin-cognito-users`, 128MB memory, 3s timeout) that calls Cognito's `ListUsers` API. For pools with many users, this call takes longer than 3s — especially across regions (if the Lambda is in `eu-west-1` but the pool is in `us-east-1`).
 
 **Fix:**
+
 1. Increase the timeout to 10s: `aws lambda update-function-configuration --function-name shazacin-admin-cognito-users --timeout 10 --region eu-west-1`.
 2. Increase memory to 256MB (Cognito calls are CPU-bound in the SDK; more memory = more CPU).
 3. If the pool has thousands of users, paginate — don't return all in one call. Cognito's `ListUsers` supports `Limit` and `PaginationToken`.
@@ -542,6 +570,7 @@ If you're not using Amplify, you must manually create resolvers using your Dynam
 **Cause:** This is a **known gap in the reference deployment**. The `shazacin-metadata-categories` table is **not documented in `schema.graphql`** and has **no AppSync resolver** — neither in the admin API nor the SAM App API. The admin UI accesses categories via a Lambda (likely `combined_lambda` or another path) or directly via the AWS SDK.
 
 **Diagnostic:**
+
 ```bash
 # Confirm the table exists
 aws dynamodb describe-table --table-name shazacin-metadata-categories --region eu-west-1 --query 'Table.{Name:TableName,ItemCount:ItemCount,KeySchema:KeySchema}' --output table
@@ -552,6 +581,7 @@ aws appsync list-resolvers --api-id 4btq2hqzbrbqbczbqtmufmauha --type-name Shaza
 ```
 
 **Fix (pick one):**
+
 1. **Add a resolver manually** — create a DynamoDB data source for `shazacin-metadata-categories` and wire up the standard CRUD resolvers. Add the type to `schema.graphql`.
 2. **Migrate to Amplify-managed** — add a `@model` directive for categories in the admin Amplify project's `schema.graphql`, map it to the existing table via `@model(tableName: "shazacin-metadata-categories")`, run `amplify push`.
 3. **Accept the gap** — if the admin UI's category access is via Lambda and works fine, leave it as-is. But document the access pattern in the schema so future contributors don't waste time looking for the resolver.
@@ -567,6 +597,7 @@ aws appsync list-resolvers --api-id 4btq2hqzbrbqbczbqtmufmauha --type-name Shaza
 **Cause:** These are **CloudFormation stack remnants from deleted dev environments**. Each `-dev` in the name indicates a dev stack; the duplicate `-XX...YY` hash suffixes come from multiple deploys of the same stack. They're orphaned — no production code references them.
 
 **Fix:**
+
 ```bash
 # List all dev-prefixed tables
 aws dynamodb list-tables --region eu-west-1 --query 'TableNames[?starts_with(@, `ShazacinStack-dev-`)]' --output table
@@ -599,6 +630,7 @@ done
 **Cause:** **Schema drift** — the schema was updated to remove `score`, but existing data rows still have it. Or the schema was updated to add `score`, but old data rows don't have it.
 
 **Fix:** See the [Schema drift section in `03-data-model.md`](03-data-model.md) for the full mitigation playbook. The short version:
+
 - For fields in data but not schema: either add them to the schema (if useful) or migrate the data to remove them.
 - For fields in schema but not data: populate them or make them optional.
 - Never delete a schema field without first checking that no data uses it.
@@ -614,6 +646,7 @@ done
 **Cause:** The T2S fingerprinter EC2 instance is an **r5.4xlarge** (16 vCPU / 128 GB RAM). On-demand pricing in `eu-west-1` is ~$1.008/hour → **~$726/month** if left running 24/7. With a 1-year reservation, ~$200/month. The instance is meant to be **stopped when not actively fingerprinting**, but if you forget to stop it after a fingerprinting session, it stays running.
 
 **Diagnostic:**
+
 ```bash
 # Check the instance state
 aws ec2 describe-instances --instance-ids i-04821c5781bfa4471 --region eu-west-1 --query 'Reservations[0].Instances[0].State.Name' --output text
@@ -626,6 +659,7 @@ aws ce get-cost-and-usage --time-period Start=2026-06-01,End=2026-07-01 --granul
 ```
 
 **Fix:**
+
 1. Stop the instance now: `aws ec2 stop-instances --instance-ids i-04821c5781bfa4471 --region eu-west-1`.
 2. Set up a **scheduled auto-stop** — a CloudWatch Events rule that runs daily at 22:00 and stops the instance if it's running. (The reference deployment has something similar for `shaza-n8ai-instance` via EventBridge Schedules `Start-EC2-Morning` / `Stop-EC2-Evening`.)
 3. For long-term cost reduction, consider migrating the fingerprinter to **ECS Fargate** (truly scale-to-zero, no instance left running) or **Spot Instance** pricing (70% discount, but interruptible).
@@ -641,6 +675,7 @@ aws ce get-cost-and-usage --time-period Start=2026-06-01,End=2026-07-01 --granul
 **Cause:** The reference deployment has **14 CloudWatch alarms**, all DynamoDB capacity alarms auto-generated by Amplify. They fire when consumed read/write capacity exceeds the table's provisioned limit. If you're on **on-demand** billing mode, these alarms are spurious — on-demand has no hard limit, only soft throttling.
 
 **Diagnostic:**
+
 ```bash
 # Check the table's billing mode
 aws dynamodb describe-table --table-name shazacin-metadata-titles --region eu-west-1 --query 'Table.BillingModeSummary.BillingMode' --output text
@@ -650,6 +685,7 @@ aws cloudwatch describe-alarms --alarm-name-prefix shazacin --region eu-west-1 -
 ```
 
 **Fix:** If your tables are on-demand, delete the alarms:
+
 ```bash
 for ALARM in $(aws cloudwatch describe-alarms --alarm-name-prefix shazacin --region eu-west-1 --query 'MetricAlarms[?contains(AlarmName, `CapacityUnitsLimit`)].AlarmName' --output text); do
   aws cloudwatch delete-alarms --alarm-names "$ALARM" --region eu-west-1
@@ -665,6 +701,7 @@ If you're on provisioned capacity, either raise the limit or switch to on-demand
 **Symptom:** Your monthly AWS bill is $80, not the "$35/month idle" the cost docs estimate.
 
 **Cause:** The cost estimate in [`08-cost-estimates.md`](08-cost-estimates.md) assumes:
+
 - t2s-checker Fargate running 24/7 (~$12)
 - ALB (~$20)
 - t2s-fingerprinter EC2 **stopped** ($0)
@@ -675,6 +712,7 @@ If you're on provisioned capacity, either raise the limit or switch to on-demand
 If your fingerprinter EC2 is running, that alone adds ~$500/month on-demand. If you have multiple CloudFront distributions (the reference has 6), each adds ~$1/month base + per-request costs. If you're running dev environments in parallel, those add up.
 
 **Fix:**
+
 1. Audit running resources: `aws resourcegroupstaggingapi get-resources --region eu-west-1 --output table`.
 2. Stop any non-prod EC2 instances.
 3. Delete orphaned CloudFront distributions (the reference has festival demos and dev distributions that may be stale).
@@ -724,6 +762,7 @@ You need **both**, in different places. The reference deployment's auth (Cognito
 **Q6. Can I deploy to a region other than `eu-west-1`?**
 
 Yes. The architecture is region-agnostic. Just ensure:
+
 - All your resources are in the same region (Cognito pools, AppSync APIs, DynamoDB tables, Lambda functions, EC2 instances, ECS clusters, S3 buckets).
 - ACM certificates for CloudFront custom domains are in `us-east-1` (CloudFront requires this, regardless of where your origins live — see [D1](#d1-cloudfront-distribution-stuck-in-inprogress-for-over-an-hour)).
 - The service worker's Firebase config (`firebase.json`) points at your Firebase project (which is global, not region-scoped).
@@ -733,6 +772,7 @@ Yes. The architecture is region-agnostic. Just ensure:
 **Q7. What's the minimum AWS permissions I need to deploy DescribeAT?**
 
 You need an IAM role (or user with access keys) that can:
+
 - Create Cognito user pools, clients, and domains
 - Create AppSync GraphQL APIs and resolvers
 - Create DynamoDB tables
@@ -762,6 +802,7 @@ You can use any fingerprinting engine that exposes an HTTP endpoint accepting `a
 **Q9. Why is the fingerprinter an EC2 instance and not ECS Fargate?**
 
 The original design called for an ECS Fargate service that scales 0→1 on S3 event. The team later switched to plain EC2 because:
+
 - **Bursty workload**: fingerprinting is rare (new uploads), heavy when it happens (4+ vCPU, lots of I/O). Fargate's 30s cold start + per-vCPU pricing made it more expensive than EC2 for this pattern.
 - **Local hash DB storage**: the fingerprinter writes new hashes to a local EBS volume (8GB gp2). With Fargate, you'd need EFS for persistent storage, adding cost and complexity.
 - **Cost control**: an EC2 r5.4xlarge stopped costs $0. When running, it's ~$500/month on-demand — but if you only run it for a few hours per fingerprinting session, the monthly cost is $5-20, not $500.
@@ -773,6 +814,7 @@ The trade-off is that the auto-trigger pipeline (S3 → Lambda → EC2 start) is
 **Q10. The hash DB is "baked into the container image" — what does that mean for updates?**
 
 In the reference deployment, the T2S checker's hash DB is in the 885MB container image (last pushed 2022-03). To update the checker's hash DB, you must:
+
 1. Build a new container image with the updated hash DB.
 2. Push the image to ECR.
 3. Force a new deployment of the ECS task: `aws ecs update-service --service t2s-checker --force-new-deployment --cluster t2s-checker --region eu-west-1`.
@@ -786,6 +828,7 @@ This is a known operational fragility. The recommended improvement is to move th
 The T2S matcher returns `{ song_id: 42, song_name: "2b237778-288a-4b05-b075-798804d26537" }`. The `song_id` is an internal Dejavu integer; the `song_name` is the original filename (which happens to be the titleId UUID). The client needs to extract the titleId from `song_name` and look up the AD Track for that title.
 
 In the reference deployment, **this mapping was never implemented in the client** — both v2 and v3 SPAs use hardcoded mock data for `song_id` and never make real T2S calls. For your deployment, you must:
+
 1. Parse `song_name` to extract the titleId (it's `{titleId}.mp3` or just `{titleId}`).
 2. Query the data layer for the title's AD tracks.
 3. Filter by the user's language preference.
@@ -802,6 +845,7 @@ This is a critical implementation gap that new deployers must fill. See [`05-dis
 Firebase Cloud Messaging (FCM) is the cross-platform push provider used by the reference deployment. It's free for unlimited messages and handles both web (Chrome, Firefox, Edge) and iOS Safari push (via APNs).
 
 Alternatives:
+
 - **OneSignal** — easier setup, but adds a third-party dependency and per-user pricing at scale.
 - **Direct APNs + Web Push** — no Firebase dependency, but you manage two code paths (iOS and web) and lose FCM's unified API.
 - **Amazon SNS** — AWS-native, but the web push story is weaker than FCM.
@@ -837,6 +881,7 @@ There is no per-user allowlist, no MFA enforcement, and no admin approval step. 
 **Q15. Why does the admin portal use a separate Cognito pool from the listener app?**
 
 The admin pool (`shazacin-admin-portal`) and the app pool (`appfrontend03c6cece`) are separate because they have **different access patterns**:
+
 - The app pool has thousands of listeners (open signup, no domain restriction).
 - The admin pool has a handful of admins (closed signup, domain-allowlisted).
 - The admin pool has a CustomMessage trigger (custom confirmation email with admin portal branding).
@@ -855,6 +900,7 @@ This table holds **inbound notifications from admin → listener** (the outbox p
 In the reference deployment, **this DynamoDB stream trigger was never wired up** — the event source mapping is orphaned (no stream enabled on the table). The live path for push notifications is direct `combined_lambda` → FCM, bypassing this table entirely. The table still receives writes (from the SQS processor), but nothing reads from it. See [`06-notifications.md`](06-notifications.md) for the architecture.
 
 For your own deployment, you can either:
+
 1. Wire up the DynamoDB stream (the "intended" architecture) — enables queue-based, retry-friendly notification delivery.
 2. Skip this table entirely and have `combined_lambda` write directly to FCM + the `shazacin-user-notifications` outbox table — simpler, fewer moving parts.
 
@@ -865,6 +911,7 @@ For your own deployment, you can either:
 The `fcmTokens` table stores device push tokens per user. It's written via the `fcmTokensAPI` Lambda, which is triggered by `POST /register` on the API Gateway (`NotificationsApiStack`, the only CDK-managed piece of the backend).
 
 To register a token:
+
 ```bash
 curl -X POST https://5iub6lxbcf.execute-api.eu-west-1.amazonaws.com/prod/register \
   -H "Authorization: Bearer $JWT" \
@@ -881,6 +928,7 @@ The endpoint requires a valid Cognito JWT (app pool). Without auth, anyone could
 **Q18. What's the realistic monthly cost for a small deployment?**
 
 For a deployment with ~100 titles, ~500 listeners, modest T2S usage:
+
 - Cognito: $0 (free tier covers 50,000 monthly active users)
 - AppSync: ~$4 (100,000 queries at $4/million)
 - DynamoDB (on-demand): ~$5 (modest read/write volume)
@@ -924,12 +972,14 @@ Set the threshold to 50% and 90% so you get a warning before you hit the budget 
 **Q20. What monitoring is missing in the reference deployment that I should add?**
 
 The reference deployment has **14 CloudWatch alarms, all DynamoDB capacity alarms** (auto-generated by Amplify). It has **no alarms on**:
+
 - T2S ECS clusters (if `t2s-checker` crashes, the service stays at `desired=1, running=0` silently)
 - Lambda error rates (`combined_lambda`, `outgoing-sqs-processor`, `audio-transcoder`)
 - AppSync 4xx/5xx rates
 - EC2 fingerprinter state (running when it shouldn't be)
 
 Recommended additions:
+
 ```bash
 # Alarm if t2s-checker is unhealthy for >5 min
 aws cloudwatch put-metric-alarm --alarm-name t2s-checker-unhealthy \
@@ -951,6 +1001,7 @@ aws cloudwatch put-metric-alarm --alarm-name t2s-fingerprinter-running-too-long 
 **Q21. How do I clean up orphaned resources safely?**
 
 Before deleting anything:
+
 1. Confirm no production code references the resource (grep the repos).
 2. Tag the resource as `orphaned` with a date for review.
 3. Wait a week. If nothing breaks, delete it.

@@ -109,7 +109,7 @@ The DCO is a lightweight alternative to a Contributor License Agreement (CLA). I
 2. You have the right to submit it under the project's license, OR
 3. You understand that the contribution may be publicly available under the project's license
 
-The full DCO text: https://developercertificate.org/
+The full DCO text: <https://developercertificate.org/>
 
 To sign off, add `-s` to your commit:
 

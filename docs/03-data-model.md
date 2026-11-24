@@ -127,6 +127,7 @@ A bug report, content request, or general feedback submitted by a listener.
 | `createdAt` | Epoch ms | yes | Audit field. |
 
 **Authorization rules:**
+
 - Listeners can create feedback for themselves (`userId == sub`)
 - Listeners can read their own feedback only
 - Admins can read all feedback
@@ -158,6 +159,7 @@ A message sent to a listener (or a group of listeners) by an admin.
 | `deliveryStatus` | Enum | yes | `pending`, `sending`, `delivered`, `partial_failure`, `failed`. |
 
 **Authorization rules:**
+
 - Listeners can read notifications addressed to them only
 - Only admins can create notifications
 - Only admins can update `deliveryStatus`
@@ -239,12 +241,14 @@ Every admin action, time-stamped, user-attributed. Immutable.
 **Why immutable:** Once written, an audit log row is never updated. If you need to "correct" an audit row, write a new row that references the old one. This is how legal compliance audits work — the log is evidence that cannot be retroactively changed.
 
 **What to log:**
+
 - Every admin creates/updates/deletes of any entity
 - Every notification sent
 - Every admin sign-in (success and failure)
 - Every user permission change
 
 **What NOT to log:**
+
 - Listener activity (too high volume, not security-relevant)
 - Audio bytes or hash data (sensitive, large)
 - User passwords or tokens (security rule, never log these)
@@ -256,6 +260,7 @@ Every admin action, time-stamped, user-attributed. Immutable.
 A common problem: the schema gets updated, but the actual stored data still has fields from the old schema (or fields that were never in the schema but got written anyway). When a client queries a field that's in the data but not in the schema, the query fails with a GraphQL "field not found" error.
 
 **How this happens:**
+
 1. An admin writes a title with a new field `score` (not in the schema yet)
 2. The schema gets updated to include `score`
 3. The schema gets updated again to remove `score` (refactor)
@@ -263,11 +268,13 @@ A common problem: the schema gets updated, but the actual stored data still has 
 5. A client queries for `score` and gets an error
 
 **How to detect it:**
+
 - Periodically (e.g. monthly) export a sample of data from each table
 - Diff the sample fields against the current schema
 - Flag any field that's in the data but not the schema (or vice versa)
 
 **How to handle it:**
+
 - For fields in data but not schema: either add them to the schema (if they're useful) or migrate the data to remove them
 - For fields in schema but not data: either populate them (if they're required) or make them optional
 - Never delete a schema field without first checking that no data uses it

@@ -58,6 +58,7 @@ Visual: see [`diagrams/01-overview.svg`](../diagrams/01-overview.svg).
 **Why:** A single global endpoint is much easier to integrate with mobile clients than per-region endpoints. The CDN also absorbs traffic spikes (a popular show's AD being requested by thousands of listeners simultaneously).
 
 **Responsibilities:**
+
 - TLS termination (ACM or equivalent certificate)
 - Route `/t2s/*` to the fingerprinting engine
 - Route `/api/*` to the data layer
@@ -67,6 +68,7 @@ Visual: see [`diagrams/01-overview.svg`](../diagrams/01-overview.svg).
 - Reject malformed requests at the edge (size limits, content-type checks)
 
 **What it is NOT responsible for:**
+
 - Authentication (handled at the data layer, not the edge)
 - Business logic (the edge is a router, not a controller)
 - Long-lived connections (the edge is HTTP/1.1 + HTTP/2 only; no WebSockets, no SSE)
@@ -194,6 +196,7 @@ DescribeAT has two distinct user populations, and they have different authorizat
 **Why two:** Reference audio and AD track audio are different things. Reference audio is the original movie/TV audio (used to generate fingerprints). AD track audio is the narration (played to listeners). They have different access patterns and different licensing implications. Mixing them is a security and licensing risk.
 
 **CDN caching rules:**
+
 - Hashed bundles (e.g. `app.a3f8b2c.js`): 1 year, immutable
 - HTML: 5 minutes, must-revalidate
 - AD track audio: 30 days, range-request friendly
@@ -255,6 +258,7 @@ The original production deployment has two push paths, of which only one is live
 **Latency budget:** The user expects a result in under 3 seconds. The fingerprint match takes 1–3 seconds. Everything else must complete in <1 second combined. This puts a hard cap on cold-start time for the matching engine.
 
 **What can go wrong (and the order to diagnose):**
+
 1. Edge returns 5xx → check edge config, check origin health
 2. Edge returns 200 with empty body → check audio Content-Type (must be `audio/mpeg`, not `audio/mp3`)
 3. Engine returns SUCCESS but `input_confidence < 0.85` → check hash database population

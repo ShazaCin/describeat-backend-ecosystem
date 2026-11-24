@@ -144,6 +144,7 @@ Four core entities. Just four. The system's apparent complexity comes from how t
 - **User Notification** — a message sent to a listener (or a group of listeners).
 
 Plus three supporting tables:
+
 - **Categories** — groupings of titles (e.g. "Movies", "TV Series", "Documentaries").
 - **FCM Tokens** — the device push tokens that link a user to their phone's notification service.
 - **Audit Log** — every admin action, time-stamped, user-attributed.
