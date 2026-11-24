@@ -39,6 +39,7 @@ Each ADR is a short document (1-2 pages) capturing a significant architectural d
 **Status:** Accepted (2026-06, originally)
 
 **Context:** Audio fingerprinting has two distinct workload patterns:
+
 - **Matching:** steady-state, light CPU, latency-sensitive. Runs on every listener sync request.
 - **Fingerprinting:** bursty, heavy CPU, latency-tolerant. Runs only when a new AD track is uploaded.
 
@@ -309,6 +310,7 @@ Add the file to `docs/adr/` and link it from this index. Future contributors wil
 ## Next
 
 You've read the full architecture documentation. Next steps:
+
 - Try to [deploy your own instance](07-deploy-your-own.md) following the step-by-step guide
 - Read the [workflows](../workflows/) for day-2 operations
 - If you find something the docs got wrong, [open an issue](../../CONTRIBUTING.md)

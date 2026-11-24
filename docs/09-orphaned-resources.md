@@ -73,32 +73,38 @@ VPCs, subnets, security groups, route tables that are no longer attached to runn
 Run this audit quarterly. It takes about 2 hours for a small deployment, longer for a large one.
 
 ### Compute
+
 - [ ] List all Lambda functions. Flag those with zero invocations in 30 days.
 - [ ] List all ECS services. Flag those with desired count > 0 and zero actual tasks.
 - [ ] List all Fargate tasks. Flag stopped tasks older than 7 days.
 - [ ] List all EC2 instances. Flag stopped instances older than 30 days.
 
 ### Storage
+
 - [ ] List all S3 buckets. For each, check access logs for the last 90 days.
 - [ ] List all EBS volumes. Flag those in `available` state (not attached) for >30 days.
 - [ ] List all EFS file systems. Flag those with no recent mount activity.
 
 ### Database
+
 - [ ] List all DynamoDB tables. For each, check consumed read/write capacity over 30 days.
 - [ ] List all RDS instances. Flag those with zero connections over 30 days.
 - [ ] List all ElastiCache clusters. Flag those with zero evictions/connections.
 
 ### Auth
+
 - [ ] List all Cognito user pools. For each, check the number of active users.
 - [ ] List all OAuth clients. Verify each is still referenced by a documented application.
 - [ ] List all IAM roles. Verify each has at least one assume-role policy that is recent.
 
 ### Network
+
 - [ ] List all VPCs. For each, list subnets and verify each has attached resources.
 - [ ] List all security groups. Flag those with no associated ENIs.
 - [ ] List all route tables. Verify each is associated with a subnet.
 
 ### Other
+
 - [ ] List all SNS topics. Flag those with no subscriptions.
 - [ ] List all SQS queues. Flag those with no recent activity.
 - [ ] List all API Gateway APIs. Verify each is still referenced by a documented client.
@@ -130,6 +136,7 @@ The best way to prevent orphans is to make them easy to identify. Adopt a naming
 - **Status:** `active`, `deprecated`, `orphan-pending`
 
 Example:
+
 ```
 prod-matcher-always-on-active
 prod-fingerprinter-on-demand-active

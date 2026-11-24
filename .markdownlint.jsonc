@@ -1,0 +1,10 @@
+{
+  // Style rules switched off: these docs are written with one paragraph per line
+  // and hand-aligned tables, so these rules only produce noise.
+  "MD013": false,
+  "MD060": false,
+  // Same heading text is fine in different sections (e.g. "Example").
+  "MD024": { "siblings_only": true },
+  // Code blocks without a language tag are allowed.
+  "MD040": false
+}

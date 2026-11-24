@@ -16,7 +16,6 @@ jobs:
   markdown-lint:
     name: Markdown lint
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -57,16 +56,13 @@ jobs:
   secret-scan:
     name: Secret scan
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          echo "Scanning for common secret patterns..."
-          if grep -rnE -- "(AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{36}|sk-[a-zA-Z0-9]{48}|-----BEGIN (RSA |EC )?PRIVATE KEY-----)" --include="*.md" --include="*.json" --include="*.yml" --include="*.yaml" . 2>/dev/null | grep -v ".git/" | grep -v "REDACTED" | grep -v "example"; then
-            echo "⚠️  Potential secrets found!"
-            exit 1
-          fi
-          echo "✅ No secrets found."
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   svg-validate:
     name: SVG validation

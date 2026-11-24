@@ -244,6 +244,7 @@ hash        | titleId    | time_offset_seconds
 **Size:** Each AD track produces ~50,000 hashes (10 minutes of audio, ~85 hashes per second). 1000 AD tracks = 50M hashes = ~5 GB of indexed data. 10,000 AD tracks = 50 GB.
 
 **Storage options:**
+
 - **In-memory (Redis or similar):** Fast, but expensive at scale. Good for the matcher.
 - **On-disk (SQLite, Postgres, DynamoDB):** Slower per-lookup but cheap to store. The matcher can load a snapshot of the most popular hashes into memory and fall back to disk for cold hashes.
 - **Hybrid:** In-memory cache + on-disk store, with a periodic sync. Most production deployments do this.
