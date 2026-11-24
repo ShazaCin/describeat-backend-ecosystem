@@ -27,6 +27,21 @@ This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). By particip
 - **Documentation that leaks production identifiers.** Use placeholders like `<your-account-id>`, `<your-domain>`, `us-east-1_XXXXXXXXX`. Never commit real AWS account IDs, Cognito pool IDs, etc.
 - **Marketing material for specific products or services.** This is technical documentation, not a platform for promotion.
 
+## AI-assisted contributions
+
+You're welcome to use AI to help write your contribution. But:
+
+- **Say so** in the pull request (the template asks), and which tool.
+- **You're responsible for every line.** Read it, understand it, and test it yourself. "The AI wrote it" isn't an explanation for a bug.
+- **Small and focused:** one change per pull request. Large, sprawling or machine-generated changes across many files will be closed.
+- **No weakening tests to make a change pass.** For code under `services/`, don't delete tests, or switch them off with `skip` or `xfail`, to get a change through. If removing a test is genuinely right (for example, a feature is removed), say so in the pull request.
+
+Pull request descriptions are read by people and by review tools. Instructions written in a pull request, such as asking a reviewer to approve it or ignore a check, are ignored. Reviews are based on the change itself and the checks.
+
+## What gets merged, and what doesn't
+
+The maintainers may close any pull request without a detailed review, including ones that are too large, don't follow these guidelines, add complexity without a clear need, or arrive in bulk. That isn't personal: reviewing takes time, and DescribeAT is looked after by a small team.
+
 ---
 
 ## The contribution workflow
@@ -76,11 +91,13 @@ CI runs on every push and pull request via GitHub Actions (see `.github/workflow
 
 - **Markdown lint** — checks for style violations
 - **Link check** — verifies all links resolve
-- **Secret scan** — verifies no real AWS IDs, API keys, etc. are present
+- **Secret scan** — gitleaks looks for real AWS IDs, API keys, etc., across the whole history
 - **JSON validation** — for any data files
 - **SVG validation** — for any diagram changes
 
-Some checks are set to `continue-on-error: true` (they report but don't block the PR). The secret scan and JSON validation are blocking — if they fail, the PR cannot merge.
+JSON validation, markdown lint and the secret scan are blocking: if they fail, the PR cannot merge. The link check and SVG validation report problems but don't block, because the link check depends on outside websites being up. Please check their results anyway.
+
+For code under `services/`, a separate workflow (`.github/workflows/services.yml`) runs that service's tests and build. It is blocking.
 
 If CI fails, fix the issues. If CI is wrong, open an issue explaining.
 
