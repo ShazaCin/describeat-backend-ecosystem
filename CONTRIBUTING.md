@@ -91,11 +91,11 @@ CI runs on every push and pull request via GitHub Actions (see `.github/workflow
 
 - **Markdown lint** — checks for style violations
 - **Link check** — verifies all links resolve
-- **Secret scan** — looks for real AWS IDs, API keys, etc.
+- **Secret scan** — gitleaks looks for real AWS IDs, API keys, etc., across the whole history
 - **JSON validation** — for any data files
 - **SVG validation** — for any diagram changes
 
-JSON validation is blocking: if it fails, the PR cannot merge. The other four are set to `continue-on-error: true`, so they report problems but don't block the PR yet. Please check their results anyway.
+JSON validation, markdown lint and the secret scan are blocking: if they fail, the PR cannot merge. The link check and SVG validation report problems but don't block, because the link check depends on outside websites being up. Please check their results anyway.
 
 For code under `services/`, a separate workflow (`.github/workflows/services.yml`) runs that service's tests and build. It is blocking.
 
