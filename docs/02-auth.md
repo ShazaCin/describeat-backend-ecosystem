@@ -45,6 +45,7 @@ These are different enough that a single pool with role-based access becomes a m
 **Domain allowlist is the load-bearing security control.** The admin pool MUST have a hard allowlist of email domains. If you deploy DescribeAT and forget to set this, anyone with a Google account can sign in as admin. There is no way to recover from this after it happens — you have to delete the pool and start over.
 
 **How to set the allowlist (per managed-auth-provider example):**
+
 - AWS Cognito: PreSignUp Lambda trigger that rejects sign-ups with disallowed email domains
 - Auth0: "Connections → Database → Rules"
 - Keycloak: "Authentication → Flows → Registration → Domain Checker"
@@ -123,6 +124,7 @@ Authorization: Bearer <access_token>
 ```
 
 The JWT contains:
+
 - `sub` — the user's unique ID (Cognito sub, a UUID)
 - `email` — the user's email
 - `cognito:groups` — the groups the user belongs to (used for role-based access in the data layer)
@@ -152,6 +154,7 @@ In June 2026, a code change in the admin pool's OAuth client configuration inadv
 **Lesson:** When you change OAuth client configuration, verify the change in BOTH pools if it affects shared scopes. The two pools are different objects on the same auth provider — a change to one does not propagate to the other.
 
 **Diagnostic recipe for "I can't sign in" reports:**
+
 1. Check the browser console for OAuth errors. The error message is usually specific.
 2. Check the data layer's auth logs. A 401 with a specific scope name is the giveaway.
 3. Compare the OAuth client config between the two pools. If they should be the same and aren't, that's the bug.

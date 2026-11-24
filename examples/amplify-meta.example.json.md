@@ -146,6 +146,7 @@ cdk synth --json > amplify-meta.json
 The `GraphQLAPIKey` field is a **secret**. If you're using API key auth (not recommended for production — use Cognito user pool auth), the API key grants full access to your GraphQL API. Anyone with the key can read and write all data.
 
 **Do not commit this file to source control if it contains real values.** Either:
+
 - Use a tool that injects secrets at build time (Amplify's build hooks, Docker secrets, etc.)
 - Keep the file out of git (`amplify-meta.local.json` in `.gitignore`)
 - Use a different auth mechanism that doesn't require committing secrets (Cognito user pool auth + IAM auth is the recommended approach)

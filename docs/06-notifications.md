@@ -258,6 +258,7 @@ The `<span class="sr-only">` is a visually-hidden text label that VoiceOver will
 ### What you can do without explicit consent
 
 In most jurisdictions, you can send notifications to a user who has:
+
 - Signed up for an account
 - Granted notification permission in their browser/OS
 - Not opted out of notifications
@@ -267,6 +268,7 @@ You **cannot** send notifications to a user who has not granted permission. Peri
 ### What you should ask before sending
 
 For sensitive categories of notifications, ask before sending. Examples:
+
 - **Marketing notifications:** Almost always requires explicit opt-in.
 - **System notifications** (app updates, security alerts): Usually OK without opt-in, but provide an opt-out.
 - **Content recommendations:** Borderline. Some jurisdictions require opt-in.

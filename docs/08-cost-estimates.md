@@ -81,12 +81,14 @@ At this scale, you should consider whether a managed service (or a commercial pa
 For most deployments, **CDN egress is the largest cost**. AD track audio is large (5-50 MB per track), and listeners stream it.
 
 **Ways to reduce CDN cost:**
+
 - Cache aggressively (the default is 30 days)
 - Use a more efficient codec (Opus or HE-AAC instead of MP3)
 - Allow listeners to download tracks for offline use (one egress, many plays)
 - Use a cheaper CDN for non-critical content (posters can go on a cheaper CDN than audio)
 
 **What you should NOT do to save money:**
+
 - Skip the always-on matcher (you'll have cold-start latency on every sync request)
 - Use a smaller fingerprinting library (match rate will drop)
 - Cache audio at the edge for longer than 30 days (audio content can change, and the cache hit rate plateaus around 30 days)
